@@ -109,6 +109,21 @@ export default function RepoCard({
     }
   }
 
+  async function handleResetKey() {
+    if (!confirm(`Generer une nouvelle cle API pour ${repoFullName} ? L'ancienne cle ne fonctionnera plus.`)) return;
+    setLoading(true);
+    try {
+      const res = await fetch(`/api/keys/${teamId}`, { method: "PATCH" });
+      if (res.ok) {
+        const data = await res.json();
+        setApiKey(data.apiKey);
+        setShowKey(true);
+      }
+    } finally {
+      setLoading(false);
+    }
+  }
+
   function handleCopy() {
     navigator.clipboard.writeText(apiKey);
     setCopied(true);
@@ -300,6 +315,13 @@ export default function RepoCard({
               style={{ color: "#c9a84c" }}
             >
               {copied ? "Copie !" : "Copier"}
+            </button>
+            <button
+              onClick={handleResetKey}
+              disabled={loading}
+              className="text-xs text-orange-400 hover:text-orange-300 px-2 py-2"
+            >
+              Reset cle
             </button>
             <button
               onClick={handleRevoke}
