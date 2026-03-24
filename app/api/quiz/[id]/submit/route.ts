@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
-import { updateCommitStatus } from "@/lib/github";
+import { updateCommitStatus, postPRComment, getGitHubToken } from "@/lib/github";
 import { DEFAULT_QUIZ_CONFIG } from "@/lib/claude";
 import type { QuizConfig } from "@/lib/claude";
 
@@ -20,7 +20,7 @@ export async function POST(
 
   const quiz = await prisma.quiz.findUnique({
     where: { id },
-    include: { team: { select: { quizConfig: true } } },
+    include: { team: { select: { id: true, quizConfig: true } } },
   });
   if (!quiz) {
     return NextResponse.json({ error: "Quiz not found" }, { status: 404 });
@@ -104,31 +104,65 @@ export async function POST(
     },
   });
 
-  // Update GitHub status
+  // Use the user's OAuth token (persisted) instead of the expired GITHUB_TOKEN
+  const token = await getGitHubToken(quiz.team.id, quiz.callbackToken);
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL || "";
+  const quizUrl = `${appUrl}/q/${quiz.id}`;
+
+  // Update GitHub status + post comment on PR
   try {
     if (newStatus === "PASSED") {
       await updateCommitStatus(
         quiz.repo,
         quiz.headSha,
-        quiz.callbackToken,
+        token,
         "success",
         config.language === "en"
           ? `Quiz passed — score ${score}/100`
-          : `Quiz réussi — score ${score}/100`
+          : `Quiz réussi — score ${score}/100`,
+        quizUrl
+      );
+      await postPRComment(
+        quiz.repo,
+        quiz.prNumber,
+        token,
+        config.language === "en"
+          ? `## Quiz passed ✅\n\nScore: **${score}/100** (${correctCount}/${numQuestions})\n\nMerge is unlocked.`
+          : `## Quiz réussi ✅\n\nScore : **${score}/100** (${correctCount}/${numQuestions})\n\nLe merge est débloqué.`
       );
     } else if (newStatus === "FAILED") {
       await updateCommitStatus(
         quiz.repo,
         quiz.headSha,
-        quiz.callbackToken,
+        token,
         "failure",
         config.language === "en"
           ? `Quiz failed — score ${score}/100 (max attempts reached)`
-          : `Quiz échoué — score ${score}/100 (max tentatives atteint)`
+          : `Quiz échoué — score ${score}/100 (max tentatives atteint)`,
+        quizUrl
+      );
+      await postPRComment(
+        quiz.repo,
+        quiz.prNumber,
+        token,
+        config.language === "en"
+          ? `## Quiz failed ❌\n\nScore: **${score}/100** (${correctCount}/${numQuestions})\n\nAll attempts used. Merge remains blocked.`
+          : `## Quiz échoué ❌\n\nScore : **${score}/100** (${correctCount}/${numQuestions})\n\nToutes les tentatives épuisées. Le merge reste bloqué.`
+      );
+    } else {
+      // Still pending — post comment about retry
+      const remaining = quiz.maxAttempts - newAttempts;
+      await postPRComment(
+        quiz.repo,
+        quiz.prNumber,
+        token,
+        config.language === "en"
+          ? `## Quiz not passed yet\n\nScore: **${score}/100** (${correctCount}/${numQuestions})\n\n${remaining} attempt${remaining > 1 ? "s" : ""} remaining. [Retry →](${quizUrl})`
+          : `## Quiz pas encore réussi\n\nScore : **${score}/100** (${correctCount}/${numQuestions})\n\n${remaining} tentative${remaining > 1 ? "s" : ""} restante${remaining > 1 ? "s" : ""}. [Réessayer →](${quizUrl})`
       );
     }
   } catch (error) {
-    console.error("Failed to update GitHub status:", error);
+    console.error("Failed to update GitHub:", error);
   }
 
   return NextResponse.json({

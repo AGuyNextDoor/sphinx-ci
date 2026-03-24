@@ -6,7 +6,7 @@ export const authConfig: NextAuthConfig = {
     GitHub({
       clientId: process.env.GITHUB_CLIENT_ID!,
       clientSecret: process.env.GITHUB_CLIENT_SECRET!,
-      authorization: { params: { scope: "read:user user:email" } },
+      authorization: { params: { scope: "read:user user:email repo" } },
       profile(profile) {
         return {
           id: profile.id.toString(),
