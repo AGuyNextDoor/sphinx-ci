@@ -1,0 +1,81 @@
+name: PR Quiz
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: read
+  pull-requests: write
+  statuses: write
+
+jobs:
+  quiz:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set pending status
+        uses: actions/github-script@v7
+        with:
+          script: |
+            await github.rest.repos.createCommitStatus({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              sha: context.payload.pull_request.head.sha,
+              state: 'pending',
+              context: 'pr-quiz',
+              description: 'Quiz en attente...',
+            });
+
+      - name: Send diff to hub & post comment
+        env:
+          PR_QUIZ_API_KEY: ${{ secrets.PR_QUIZ_API_KEY }}
+          PR_QUIZ_HUB_URL: ${{ vars.PR_QUIZ_HUB_URL }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # Get code-only diff (max 12k chars)
+          DIFF=$(git diff ${{ github.event.pull_request.base.sha }}...${{ github.event.pull_request.head.sha }} \
+            -- '*.js' '*.ts' '*.jsx' '*.tsx' '*.py' '*.go' '*.java' '*.rs' '*.rb' '*.php' '*.cs' '*.cpp' \
+            | head -c 12000)
+
+          FILES=$(git diff --name-only ${{ github.event.pull_request.base.sha }}...${{ github.event.pull_request.head.sha }} | tr '\n' ',' | sed 's/,$//')
+
+          # Send to hub
+          RESPONSE=$(curl -sf -X POST "$PR_QUIZ_HUB_URL/api/quiz" \
+            -H "Content-Type: application/json" \
+            -H "X-API-Key: $PR_QUIZ_API_KEY" \
+            -d "{
+              \"repo\": \"${{ github.repository }}\",
+              \"pr_number\": ${{ github.event.pull_request.number }},
+              \"head_sha\": \"${{ github.event.pull_request.head.sha }}\",
+              \"pr_title\": $(echo '${{ github.event.pull_request.title }}' | jq -Rs .),
+              \"diff\": $(echo "$DIFF" | jq -Rs .),
+              \"files_changed\": $(echo "$FILES" | jq -Rs 'split(",")'),
+              \"callback_token\": \"$GITHUB_TOKEN\"
+            }")
+
+          QUIZ_URL=$(echo $RESPONSE | jq -r '.quiz_url')
+          SKIPPED=$(echo $RESPONSE | jq -r '.skipped // false')
+
+          if [ "$SKIPPED" = "true" ]; then
+            echo "No code changes, skipping quiz."
+            # Set success status when skipped
+            curl -sf -X POST "https://api.github.com/repos/${{ github.repository }}/statuses/${{ github.event.pull_request.head.sha }}" \
+              -H "Authorization: token $GITHUB_TOKEN" \
+              -H "Accept: application/vnd.github.v3+json" \
+              -d '{"state":"success","context":"pr-quiz","description":"Pas de changement de code — quiz ignoré"}'
+            exit 0
+          fi
+
+          # Post comment on the PR
+          gh pr comment ${{ github.event.pull_request.number }} --body "## 🏛️ Quiz de compréhension requis
+
+          Pour débloquer le merge, complète ce quiz de 10 questions sur ton code.
+          **Score minimum : 70%**
+
+          👉 [$QUIZ_URL]($QUIZ_URL)
+
+          *Le Sphinx attend ta réponse — 48h, 3 tentatives maximum.*"

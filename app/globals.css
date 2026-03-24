@@ -1,0 +1,15 @@
+@import "tailwindcss";
+
+:root {
+  --gold: #c9a84c;
+  --gold-light: #dbc06a;
+  --gold-dark: #a8893a;
+  --bg: #0f0c1a;
+  --bg-light: #1a1628;
+  --bg-lighter: #252036;
+}
+
+body {
+  background-color: var(--bg);
+  color: #e5e7eb;
+}

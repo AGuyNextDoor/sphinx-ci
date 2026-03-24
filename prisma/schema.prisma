@@ -1,0 +1,75 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String?   @unique
+  emailVerified DateTime?
+  image         String?
+  githubId      Int       @unique
+  githubLogin   String
+  createdAt     DateTime  @default(now())
+  accounts      Account[]
+  teams         Team[]
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Team {
+  id        String   @id @default(cuid())
+  name      String
+  apiKey    String   @unique
+  userId    String?
+  user      User?    @relation(fields: [userId], references: [id])
+  createdAt DateTime @default(now())
+  quizzes   Quiz[]
+}
+
+model Quiz {
+  id            String     @id @default(cuid())
+  teamId        String
+  team          Team       @relation(fields: [teamId], references: [id])
+  repo          String
+  prNumber      Int
+  headSha       String
+  prTitle       String
+  diff          String
+  questions     Json
+  status        QuizStatus @default(PENDING)
+  score         Int?
+  attempts      Int        @default(0)
+  maxAttempts   Int        @default(3)
+  callbackToken String
+  expiresAt     DateTime
+  createdAt     DateTime   @default(now())
+  submittedAt   DateTime?
+}
+
+enum QuizStatus {
+  PENDING
+  PASSED
+  FAILED
+  EXPIRED
+}
