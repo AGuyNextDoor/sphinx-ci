@@ -66,104 +66,15 @@ Go to your GitHub repo: **Settings > Secrets and variables > Actions**
 
 ### Step 4 — Add the GitHub Action workflow
 
-Create the file `.github/workflows/pr-quiz.yml` in your repo:
+Copy the workflow file [`.github/workflows/pr-quiz.yml`](.github/workflows/pr-quiz.yml) to your repo.
 
-```yaml
-name: PR Quiz
+The workflow handles all error scenarios:
+- **No code changes** → comments "No quiz needed", sets status to success
+- **Hub errors** (401, 400, 429, 503) → comments with a clear error message and link to fix
+- **Missing config** → comments with setup instructions
+- **Service unavailable** → fail-open, PR is not blocked
 
-on:
-  issue_comment:
-    types: [created]
-
-permissions:
-  contents: read
-  pull-requests: write
-  statuses: write
-
-jobs:
-  quiz:
-    if: github.event.issue.pull_request && contains(github.event.comment.body, '/sphinx')
-    runs-on: ubuntu-latest
-    steps:
-      - name: Get PR details
-        id: pr
-        uses: actions/github-script@v7
-        with:
-          script: |
-            const pr = await github.rest.pulls.get({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              pull_number: context.issue.number,
-            });
-            core.setOutput('head_sha', pr.data.head.sha);
-            core.setOutput('base_sha', pr.data.base.sha);
-            core.setOutput('title', pr.data.title);
-
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Set pending status
-        uses: actions/github-script@v7
-        with:
-          script: |
-            await github.rest.repos.createCommitStatus({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              sha: '${{ steps.pr.outputs.head_sha }}',
-              state: 'pending',
-              context: 'pr-quiz',
-              description: 'Quiz pending...',
-            });
-
-      - name: Send diff to hub & post comment
-        env:
-          PR_QUIZ_API_KEY: ${{ secrets.PR_QUIZ_API_KEY }}
-          PR_QUIZ_HUB_URL: ${{ vars.PR_QUIZ_HUB_URL }}
-          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          HEAD_SHA="${{ steps.pr.outputs.head_sha }}"
-          BASE_SHA="${{ steps.pr.outputs.base_sha }}"
-          PR_TITLE="${{ steps.pr.outputs.title }}"
-          PR_NUMBER="${{ github.event.issue.number }}"
-
-          DIFF=$(git diff ${BASE_SHA}...${HEAD_SHA} \
-            -- '*.js' '*.ts' '*.jsx' '*.tsx' '*.py' '*.go' '*.java' '*.rs' '*.rb' '*.php' '*.cs' '*.cpp' \
-            | head -c 12000)
-
-          FILES=$(git diff --name-only ${BASE_SHA}...${HEAD_SHA} | tr '\n' ',' | sed 's/,$//')
-
-          RESPONSE=$(curl -sf -X POST "$PR_QUIZ_HUB_URL/api/quiz" \
-            -H "Content-Type: application/json" \
-            -H "X-API-Key: $PR_QUIZ_API_KEY" \
-            -d "{
-              \"repo\": \"${{ github.repository }}\",
-              \"pr_number\": ${PR_NUMBER},
-              \"head_sha\": \"${HEAD_SHA}\",
-              \"pr_title\": $(echo "$PR_TITLE" | jq -Rs .),
-              \"diff\": $(echo "$DIFF" | jq -Rs .),
-              \"files_changed\": $(echo "$FILES" | jq -Rs 'split(",")'),
-              \"callback_token\": \"$GITHUB_TOKEN\",
-              \"anthropic_api_key\": \"$ANTHROPIC_API_KEY\"
-            }")
-
-          QUIZ_URL=$(echo $RESPONSE | jq -r '.quiz_url')
-          SKIPPED=$(echo $RESPONSE | jq -r '.skipped // false')
-
-          if [ "$SKIPPED" = "true" ]; then
-            echo "No code changes, skipping quiz."
-            curl -sf -X POST "https://api.github.com/repos/${{ github.repository }}/statuses/${HEAD_SHA}" \
-              -H "Authorization: token $GITHUB_TOKEN" \
-              -H "Accept: application/vnd.github.v3+json" \
-              -d '{"state":"success","context":"pr-quiz","description":"No code changes — quiz skipped"}'
-            exit 0
-          fi
-
-          echo "Quiz created: $QUIZ_URL"
-```
-
-Commit and push this file to your repo's main branch.
+Commit and push the file to your repo's main branch.
 
 ### Step 5 (optional) — Enable branch protection
 

@@ -11,7 +11,6 @@ permissions:
 
 jobs:
   quiz:
-    # Only run on PR comments (not issue comments) containing the keyword
     if: github.event.issue.pull_request && contains(github.event.comment.body, '@sphinx-ci')
     runs-on: ubuntu-latest
     steps:
@@ -20,14 +19,24 @@ jobs:
         uses: actions/github-script@v7
         with:
           script: |
-            const pr = await github.rest.pulls.get({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              pull_number: context.issue.number,
-            });
-            core.setOutput('head_sha', pr.data.head.sha);
-            core.setOutput('base_sha', pr.data.base.sha);
-            core.setOutput('title', pr.data.title);
+            try {
+              const pr = await github.rest.pulls.get({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                pull_number: context.issue.number,
+              });
+              core.setOutput('head_sha', pr.data.head.sha);
+              core.setOutput('base_sha', pr.data.base.sha);
+              core.setOutput('title', pr.data.title);
+            } catch (error) {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body: `## ⚠️ sphinx-ci error\n\nCould not fetch PR details.\n\n\`${error.message}\``
+              });
+              core.setFailed(error.message);
+            }
 
       - uses: actions/checkout@v4
         with:
@@ -43,30 +52,66 @@ jobs:
               sha: '${{ steps.pr.outputs.head_sha }}',
               state: 'pending',
               context: 'pr-quiz',
-              description: 'Quiz en attente...',
+              description: 'Quiz pending...',
             });
 
-      - name: Send diff to hub & post comment
+      - name: Generate quiz
         env:
           PR_QUIZ_API_KEY: ${{ secrets.PR_QUIZ_API_KEY }}
           PR_QUIZ_HUB_URL: ${{ vars.PR_QUIZ_HUB_URL }}
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
+          set +e
+
           HEAD_SHA="${{ steps.pr.outputs.head_sha }}"
           BASE_SHA="${{ steps.pr.outputs.base_sha }}"
           PR_TITLE="${{ steps.pr.outputs.title }}"
           PR_NUMBER="${{ github.event.issue.number }}"
 
-          # Get code-only diff (max 12k chars)
+          # --- Check for missing config ---
+          if [ -z "$PR_QUIZ_API_KEY" ]; then
+            gh pr comment ${PR_NUMBER} --body "## ⚠️ sphinx-ci error
+
+          Missing \`PR_QUIZ_API_KEY\` secret. Add it in **Settings > Secrets and variables > Actions**.
+
+          [Setup guide →](https://github.com/AGuyNextDoor/sphinx-ci#step-3--add-secrets-and-variables-to-your-github-repo)"
+            exit 1
+          fi
+
+          if [ -z "$PR_QUIZ_HUB_URL" ]; then
+            gh pr comment ${PR_NUMBER} --body "## ⚠️ sphinx-ci error
+
+          Missing \`PR_QUIZ_HUB_URL\` variable. Add it in **Settings > Secrets and variables > Actions > Variables**.
+
+          Value: \`https://sphinx-ci.dev\`"
+            exit 1
+          fi
+
+          # --- Get diff ---
           DIFF=$(git diff ${BASE_SHA}...${HEAD_SHA} \
             -- '*.js' '*.ts' '*.jsx' '*.tsx' '*.py' '*.go' '*.java' '*.rs' '*.rb' '*.php' '*.cs' '*.cpp' \
             | head -c 12000)
 
           FILES=$(git diff --name-only ${BASE_SHA}...${HEAD_SHA} | tr '\n' ',' | sed 's/,$//')
 
-          # Send to hub
-          RESPONSE=$(curl -sf -X POST "$PR_QUIZ_HUB_URL/api/quiz" \
+          # --- No code changes → skip ---
+          if [ -z "$DIFF" ] || [ ${#DIFF} -lt 50 ]; then
+            echo "No code changes or diff too small, skipping quiz."
+            gh pr comment ${PR_NUMBER} --body "## sphinx-ci — No quiz needed
+
+          This PR doesn't contain enough code changes to generate a quiz. Only documentation or config files were modified.
+
+          ✅ No quiz required — merge is not blocked."
+            curl -s -X POST "https://api.github.com/repos/${{ github.repository }}/statuses/${HEAD_SHA}" \
+              -H "Authorization: token $GITHUB_TOKEN" \
+              -H "Accept: application/vnd.github.v3+json" \
+              -d '{"state":"success","context":"pr-quiz","description":"No code changes — quiz skipped"}'
+            exit 0
+          fi
+
+          # --- Send to hub ---
+          HTTP_CODE=$(curl -s -o /tmp/sphinx_response.json -w "%{http_code}" -X POST "$PR_QUIZ_HUB_URL/api/quiz" \
             -H "Content-Type: application/json" \
             -H "X-API-Key: $PR_QUIZ_API_KEY" \
             -d "{
@@ -80,12 +125,71 @@ jobs:
               \"anthropic_api_key\": \"$ANTHROPIC_API_KEY\"
             }")
 
-          QUIZ_URL=$(echo $RESPONSE | jq -r '.quiz_url')
-          SKIPPED=$(echo $RESPONSE | jq -r '.skipped // false')
+          RESPONSE=$(cat /tmp/sphinx_response.json)
+
+          # --- Handle hub errors ---
+          if [ "$HTTP_CODE" = "401" ]; then
+            gh pr comment ${PR_NUMBER} --body "## ⚠️ sphinx-ci error
+
+          Invalid API key. Make sure \`PR_QUIZ_API_KEY\` matches the key generated in the [sphinx-ci dashboard](https://sphinx-ci.dev/dashboard/repos)."
+            exit 1
+          fi
+
+          if [ "$HTTP_CODE" = "400" ]; then
+            ERROR_MSG=$(echo "$RESPONSE" | jq -r '.error // "Unknown error"')
+            gh pr comment ${PR_NUMBER} --body "## ⚠️ sphinx-ci error
+
+          \`$ERROR_MSG\`
+
+          Check your configuration in the [sphinx-ci dashboard](https://sphinx-ci.dev/dashboard/repos)."
+            exit 1
+          fi
+
+          if [ "$HTTP_CODE" = "429" ]; then
+            gh pr comment ${PR_NUMBER} --body "## ⚠️ sphinx-ci — Rate limit
+
+          Too many quizzes generated recently. Max 10 per hour. Try again later."
+            exit 1
+          fi
+
+          if [ "$HTTP_CODE" = "503" ]; then
+            gh pr comment ${PR_NUMBER} --body "## ⚠️ sphinx-ci — Quiz generation failed
+
+          Claude (AI) could not generate the quiz. This is temporary — try again by commenting \`@sphinx-ci\`.
+
+          Your PR is **not blocked**."
+            curl -s -X POST "https://api.github.com/repos/${{ github.repository }}/statuses/${HEAD_SHA}" \
+              -H "Authorization: token $GITHUB_TOKEN" \
+              -H "Accept: application/vnd.github.v3+json" \
+              -d '{"state":"success","context":"pr-quiz","description":"Quiz generation failed — not blocking"}'
+            exit 0
+          fi
+
+          if [ "$HTTP_CODE" != "200" ] && [ "$HTTP_CODE" != "201" ]; then
+            gh pr comment ${PR_NUMBER} --body "## ⚠️ sphinx-ci error
+
+          Unexpected error (HTTP $HTTP_CODE). The sphinx-ci service may be temporarily unavailable.
+
+          Your PR is **not blocked**. Try again later by commenting \`@sphinx-ci\`."
+            curl -s -X POST "https://api.github.com/repos/${{ github.repository }}/statuses/${HEAD_SHA}" \
+              -H "Authorization: token $GITHUB_TOKEN" \
+              -H "Accept: application/vnd.github.v3+json" \
+              -d '{"state":"success","context":"pr-quiz","description":"sphinx-ci error — not blocking"}'
+            exit 0
+          fi
+
+          # --- Success ---
+          QUIZ_URL=$(echo "$RESPONSE" | jq -r '.quiz_url')
+          SKIPPED=$(echo "$RESPONSE" | jq -r '.skipped // false')
 
           if [ "$SKIPPED" = "true" ]; then
-            echo "No code changes, skipping quiz."
-            curl -sf -X POST "https://api.github.com/repos/${{ github.repository }}/statuses/${HEAD_SHA}" \
+            echo "Skipped by hub (diff too small)."
+            gh pr comment ${PR_NUMBER} --body "## sphinx-ci — No quiz needed
+
+          This PR doesn't contain enough code changes to generate a quiz.
+
+          ✅ No quiz required — merge is not blocked."
+            curl -s -X POST "https://api.github.com/repos/${{ github.repository }}/statuses/${HEAD_SHA}" \
               -H "Authorization: token $GITHUB_TOKEN" \
               -H "Accept: application/vnd.github.v3+json" \
               -d '{"state":"success","context":"pr-quiz","description":"No code changes — quiz skipped"}'
