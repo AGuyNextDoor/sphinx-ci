@@ -6,7 +6,7 @@ sphinx-ci is a CI/CD tool that generates AI-powered code comprehension quizzes f
 ## Architecture
 
 ### Two-part system
-1. **Central hub** (sphinx-ci.vercel.app): A Next.js 14 web application that:
+1. **Central hub** (sphinx-ci.dev): A Next.js 14 web application that:
    - Authenticates users via GitHub OAuth
    - Lets admins configure repos and generate API keys
    - Receives PR diffs from GitHub Actions
@@ -100,7 +100,7 @@ Hub (Vercel):
 Repo (GitHub Actions secrets/variables):
 - PR_QUIZ_API_KEY (secret): Team API key from sphinx-ci dashboard
 - ANTHROPIC_API_KEY (secret): User's Anthropic API key
-- PR_QUIZ_HUB_URL (variable): URL of the hub (e.g., https://sphinx-ci.vercel.app)
+- PR_QUIZ_HUB_URL (variable): URL of the hub (e.g., https://sphinx-ci.dev)
 
 ### Internationalization
 The app supports English (default) and French. Language is stored in a cookie and switchable via a button in the navbar.

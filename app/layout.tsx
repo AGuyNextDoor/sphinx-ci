@@ -5,7 +5,7 @@ import "./globals.css";
 
 const inter = Inter({ subsets: ["latin"] });
 
-const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://sphinx-ci.vercel.app";
+const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://sphinx-ci.dev";
 
 export const metadata: Metadata = {
   title: "sphinx-ci — Code comprehension quizzes before merge",

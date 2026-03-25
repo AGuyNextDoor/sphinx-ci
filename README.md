@@ -20,7 +20,7 @@ Comment `/sphinx` on a PR → quiz generated from the diff → dev answers → m
 
 ### Step 1 — Sign in on sphinx-ci
 
-1. Go to **https://sphinx-ci.vercel.app**
+1. Go to **https://sphinx-ci.dev**
 2. Click **Get started with GitHub**
 3. Authorize the app to access your GitHub account
 
@@ -59,7 +59,7 @@ Go to your GitHub repo: **Settings > Secrets and variables > Actions**
 
 | Name | Value |
 |------|-------|
-| `PR_QUIZ_HUB_URL` | `https://sphinx-ci.vercel.app` |
+| `PR_QUIZ_HUB_URL` | `https://sphinx-ci.dev` |
 
 > `GITHUB_TOKEN` is provided automatically by GitHub Actions — nothing to configure.
 > Your Anthropic key stays in your GitHub repo secrets — it is never entered on the sphinx-ci website.
@@ -247,7 +247,7 @@ You can also:
 
 ### Architecture
 
-- **Central hub** (`sphinx-ci.vercel.app`): Next.js app that generates quizzes via Claude, hosts them, and reports scores to GitHub
+- **Central hub** (`sphinx-ci.dev`): Next.js app that generates quizzes via Claude, hosts them, and reports scores to GitHub
 - **GitHub Action**: workflow in each protected repo that sends the diff to the hub when `/sphinx` is commented
 
 > **No GitHub App needed.** We use a GitHub OAuth App for login and the user's OAuth token to post results on PRs.

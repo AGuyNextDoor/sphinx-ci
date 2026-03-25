@@ -37,6 +37,9 @@ export default async function DashboardLayout({
               <Link href="/dashboard/quizzes" className="transition-colors hover:text-white" style={{ color: "#b0a8c4" }}>
                 {t.nav.quizzes}
               </Link>
+              <Link href="/dashboard/analytics" className="transition-colors hover:text-white" style={{ color: "#b0a8c4" }}>
+                {t.analytics.title}
+              </Link>
             </div>
           </div>
           <div className="flex items-center gap-2 sm:gap-4">

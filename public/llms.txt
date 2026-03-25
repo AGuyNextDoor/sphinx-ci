@@ -7,7 +7,7 @@ sphinx-ci is a free, open-source CI/CD tool that generates AI-powered code compr
 sphinx-ci is designed for upskilling, not policing. Every PR becomes a learning moment — developers articulate what they understand about their own code before it goes to production.
 
 ## How it works
-1. An admin signs in with GitHub on sphinx-ci.vercel.app and configures repos
+1. An admin signs in with GitHub on sphinx-ci.dev and configures repos
 2. The admin adds a GitHub Action workflow and secrets (PR_QUIZ_API_KEY, ANTHROPIC_API_KEY) to the repo
 3. When someone comments `/sphinx` on a PR, the Action sends the diff to the sphinx-ci hub
 4. The hub generates quiz questions using Claude (Anthropic) based on the PR diff
@@ -32,9 +32,9 @@ sphinx-ci is designed for upskilling, not policing. Every PR becomes a learning 
 - Deployed on Vercel
 
 ## URLs
-- Website: https://sphinx-ci.vercel.app
+- Website: https://sphinx-ci.dev
 - GitHub: https://github.com/AGuyNextDoor/sphinx-ci
-- Pricing: https://sphinx-ci.vercel.app/pricing (free forever)
+- Pricing: https://sphinx-ci.dev/pricing (free forever)
 
 ## API
 - POST /api/quiz — Create a quiz (requires X-API-Key header)

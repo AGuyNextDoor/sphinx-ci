@@ -40,6 +40,75 @@ export default async function DashboardPage() {
   const passRate =
     totalQuizzes > 0 ? Math.round((passedQuizzes / totalQuizzes) * 100) : 0;
 
+  // Show onboarding if no repos configured
+  if (teams.length === 0) {
+    return (
+      <div className="max-w-2xl mx-auto py-8">
+        <div className="text-center mb-10">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/sphinx-logo.svg" alt="" width="56" height="56" className="mx-auto mb-4" />
+          <h1 className="text-3xl font-bold text-white mb-2" style={{ fontFamily: "Georgia, serif" }}>
+            {t.onboarding.welcome}
+          </h1>
+          <p style={{ color: "#b0a8c4" }}>{t.onboarding.subtitle}</p>
+        </div>
+
+        <div className="space-y-4">
+          {[
+            {
+              step: "Α",
+              title: t.onboarding.step1,
+              desc: t.onboarding.step1desc,
+              cta: { label: t.onboarding.step1cta, href: "/dashboard/repos" },
+            },
+            {
+              step: "Β",
+              title: t.onboarding.step2,
+              desc: t.onboarding.step2desc,
+            },
+            {
+              step: "Γ",
+              title: t.onboarding.step3,
+              desc: t.onboarding.step3desc,
+              cta: { label: t.onboarding.step3cta, href: "https://github.com/AGuyNextDoor/sphinx-ci#step-4--add-the-github-action-workflow", external: true },
+            },
+          ].map((item) => (
+            <div
+              key={item.step}
+              className="rounded-xl p-5 border flex gap-4"
+              style={{ background: "#1a1628", borderColor: "#252036" }}
+            >
+              <div
+                className="flex-shrink-0 w-10 h-10 rounded-lg flex items-center justify-center text-lg font-bold"
+                style={{ background: "rgba(201,168,76,0.1)", color: "#c9a84c", fontFamily: "Georgia, serif" }}
+              >
+                {item.step}
+              </div>
+              <div className="flex-1">
+                <h3 className="text-white font-semibold mb-1" style={{ fontFamily: "Georgia, serif" }}>
+                  {item.title}
+                </h3>
+                <p className="text-sm mb-3" style={{ color: "#b0a8c4" }}>
+                  {item.desc}
+                </p>
+                {item.cta && (
+                  <Link
+                    href={item.cta.href}
+                    target={(item.cta as any).external ? "_blank" : undefined}
+                    className="text-sm font-medium"
+                    style={{ color: "#c9a84c" }}
+                  >
+                    {item.cta.label} →
+                  </Link>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div>
       <h1 className="text-2xl font-bold text-white mb-6">{t.dashboard.title}</h1>
