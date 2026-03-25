@@ -3,46 +3,84 @@
 import { useState } from "react";
 import { dictionaries } from "@/lib/i18n";
 
-const demoQuestions = [
-  {
-    question: "Que retourne la fonction truncate si maxLength vaut 2 et que la chaîne fait 10 caractères ?",
-    options: [
-      "A) Les 2 premiers caractères",
-      "B) Une chaîne plus longue que maxLength",
-      "C) Une chaîne vide",
-      "D) Une erreur TypeError",
-    ],
-    correct: 1,
-    explanation: "slice(0, 2-3) donne un index négatif, ce qui prend depuis la fin. Le résultat + \"...\" dépasse maxLength.",
-  },
-  {
-    question: "Dans timeAgo, que se passe-t-il pour une date dans le futur ?",
-    options: [
-      "A) Elle lève une exception",
-      "B) Elle retourne 'dans le futur'",
-      "C) Elle retourne 'à l'instant'",
-      "D) Elle retourne une valeur négative",
-    ],
-    correct: 2,
-    explanation: "diffMs est négatif → diffMin < 1 est vrai → retourne \"à l'instant\".",
-  },
-  {
-    question: "Combien de caractères retourne randomHex(16) ?",
-    options: [
-      "A) 16 caractères",
-      "B) 32 caractères",
-      "C) 64 caractères",
-      "D) Variable selon les valeurs",
-    ],
-    correct: 1,
-    explanation: "Chaque byte → 2 caractères hex (padStart). 16 bytes × 2 = 32 caractères.",
-  },
-];
+const demoQuestions = {
+  en: [
+    {
+      question: "In this PR, the new handlePayment() function catches errors but doesn't re-throw them. What's the impact?",
+      options: [
+        "A) The function works correctly in all cases",
+        "B) Payment failures are silently swallowed — the caller never knows it failed",
+        "C) The error is automatically logged by the runtime",
+        "D) The transaction is rolled back automatically",
+      ],
+      correct: 1,
+      explanation: "The catch block logs the error but doesn't re-throw or return a failure status, so the calling code assumes success.",
+    },
+    {
+      question: "The diff adds a new API endpoint without any authentication middleware. What's the risk?",
+      options: [
+        "A) No risk — internal APIs don't need auth",
+        "B) Unauthorized users can access the endpoint and its data",
+        "C) The endpoint will return 500 errors",
+        "D) The middleware is inherited from the parent router",
+      ],
+      correct: 1,
+      explanation: "Unlike other endpoints in this file, the new route doesn't use the authMiddleware — anyone can call it.",
+    },
+    {
+      question: "The PR changes the default value of maxRetries from 3 to 0. What happens to existing users?",
+      options: [
+        "A) Nothing — existing configs override the default",
+        "B) All existing users lose retry behavior immediately",
+        "C) Only new users are affected",
+        "D) The migration handles the transition",
+      ],
+      correct: 1,
+      explanation: "Users who relied on the default (never explicitly set maxRetries) will now have 0 retries after deployment.",
+    },
+  ],
+  fr: [
+    {
+      question: "Dans cette PR, la nouvelle fonction handlePayment() attrape les erreurs sans les relancer. Quel est l'impact ?",
+      options: [
+        "A) La fonction marche correctement dans tous les cas",
+        "B) Les échecs de paiement sont ignorés silencieusement — l'appelant ne sait jamais que ça a échoué",
+        "C) L'erreur est automatiquement loggée par le runtime",
+        "D) La transaction est rollback automatiquement",
+      ],
+      correct: 1,
+      explanation: "Le catch log l'erreur mais ne la relance pas et ne retourne pas de statut d'échec, donc le code appelant croit que tout s'est bien passé.",
+    },
+    {
+      question: "Le diff ajoute un nouvel endpoint API sans middleware d'authentification. Quel est le risque ?",
+      options: [
+        "A) Aucun risque — les APIs internes n'ont pas besoin d'auth",
+        "B) Des utilisateurs non autorisés peuvent accéder à l'endpoint et ses données",
+        "C) L'endpoint retournera des erreurs 500",
+        "D) Le middleware est hérité du routeur parent",
+      ],
+      correct: 1,
+      explanation: "Contrairement aux autres endpoints du fichier, la nouvelle route n'utilise pas authMiddleware — n'importe qui peut l'appeler.",
+    },
+    {
+      question: "La PR change la valeur par défaut de maxRetries de 3 à 0. Que se passe-t-il pour les utilisateurs existants ?",
+      options: [
+        "A) Rien — les configs existantes écrasent la valeur par défaut",
+        "B) Tous les utilisateurs existants perdent le comportement de retry immédiatement",
+        "C) Seuls les nouveaux utilisateurs sont affectés",
+        "D) La migration gère la transition",
+      ],
+      correct: 1,
+      explanation: "Les utilisateurs qui se reposaient sur le défaut (n'ont jamais explicitement défini maxRetries) auront 0 retries après le déploiement.",
+    },
+  ],
+};
 
 export default function DemoQuiz({ locale }: { locale: "en" | "fr" }) {
   const t = dictionaries[locale];
+  const questions = demoQuestions[locale];
   const [answers, setAnswers] = useState<(number | null)[]>(
-    new Array(demoQuestions.length).fill(null)
+    new Array(questions.length).fill(null)
   );
 
   function handleSelect(questionIndex: number, optionIndex: number) {
@@ -54,13 +92,13 @@ export default function DemoQuiz({ locale }: { locale: "en" | "fr" }) {
 
   const answeredCount = answers.filter((a) => a !== null).length;
   const correctCount = answers.filter(
-    (a, i) => a === demoQuestions[i].correct
+    (a, i) => a === questions[i].correct
   ).length;
 
   return (
     <div>
       <div className="space-y-4">
-        {demoQuestions.map((q, qi) => {
+        {questions.map((q, qi) => {
           const selected = answers[qi];
           const answered = selected !== null;
 
@@ -71,7 +109,7 @@ export default function DemoQuiz({ locale }: { locale: "en" | "fr" }) {
               style={{ background: "#0f0c1a", borderColor: "#252036" }}
             >
               <p className="text-xs mb-2" style={{ color: "#8b85a0" }}>
-                Question {qi + 1}/{demoQuestions.length}
+                Question {qi + 1}/{questions.length}
               </p>
               <p className="text-white mb-4">{q.question}</p>
               <div className="space-y-2">
@@ -94,9 +132,6 @@ export default function DemoQuiz({ locale }: { locale: "en" | "fr" }) {
                       bgColor = "rgba(239,68,68,0.08)";
                       textColor = "#f87171";
                     }
-                  } else if (isSelected) {
-                    borderColor = "rgba(201,168,76,0.3)";
-                    bgColor = "rgba(201,168,76,0.05)";
                   }
 
                   return (
@@ -114,24 +149,17 @@ export default function DemoQuiz({ locale }: { locale: "en" | "fr" }) {
                     >
                       {opt}
                       {answered && isCorrect && (
-                        <span className="ml-2 text-xs" style={{ color: "#c9a84c" }}>
-                          ✓
-                        </span>
+                        <span className="ml-2 text-xs" style={{ color: "#c9a84c" }}>✓</span>
                       )}
                       {isWrong && (
-                        <span className="ml-2 text-xs" style={{ color: "#f87171" }}>
-                          ✗
-                        </span>
+                        <span className="ml-2 text-xs" style={{ color: "#f87171" }}>✗</span>
                       )}
                     </button>
                   );
                 })}
               </div>
               {answered && (
-                <p
-                  className="text-xs mt-3 italic"
-                  style={{ color: "#8b85a0" }}
-                >
+                <p className="text-xs mt-3 italic" style={{ color: "#8b85a0" }}>
                   {q.explanation}
                 </p>
               )}
@@ -140,13 +168,13 @@ export default function DemoQuiz({ locale }: { locale: "en" | "fr" }) {
         })}
       </div>
 
-      {answeredCount === demoQuestions.length && (
+      {answeredCount === questions.length && (
         <div
           className="mt-6 rounded-xl p-5 border text-center"
           style={{ background: "#0f0c1a", borderColor: "rgba(201,168,76,0.3)" }}
         >
           <p className="text-lg font-semibold text-white">
-            {correctCount}/{demoQuestions.length} {t.landing.demoCorrect}
+            {correctCount}/{questions.length} {t.landing.demoCorrect}
           </p>
           <p className="text-sm mt-1" style={{ color: "#b0a8c4" }}>
             {t.landing.demoNote}
@@ -154,9 +182,9 @@ export default function DemoQuiz({ locale }: { locale: "en" | "fr" }) {
         </div>
       )}
 
-      {answeredCount < demoQuestions.length && (
+      {answeredCount < questions.length && (
         <p className="text-center text-sm mt-6" style={{ color: "#8b85a0" }}>
-          {t.landing.demoClick} — {answeredCount}/{demoQuestions.length} {t.landing.demoAnswered}
+          {t.landing.demoClick} — {answeredCount}/{questions.length} {t.landing.demoAnswered}
         </p>
       )}
     </div>
