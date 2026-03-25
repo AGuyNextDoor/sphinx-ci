@@ -363,6 +363,40 @@ export default async function Home() {
         </div>
       </section>
 
+      {/* Product Hunt */}
+      <section className="px-4 py-10 flex justify-center">
+        <div
+          className="rounded-xl p-5 border max-w-md w-full"
+          style={{ background: "#1a1628", borderColor: "#252036" }}
+        >
+          <div className="flex items-center gap-3 mb-3">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              alt="sphinx-ci"
+              src="https://ph-files.imgix.net/14f34d4e-18dd-404d-86d3-70f956dc4e23.png?auto=format&fit=crop&w=80&h=80"
+              className="w-14 h-14 rounded-lg object-cover flex-shrink-0"
+            />
+            <div className="flex-1 min-w-0">
+              <h3 className="text-white font-semibold text-base" style={{ fontFamily: "Georgia, serif" }}>
+                sphinx-ci
+              </h3>
+              <p className="text-sm" style={{ color: "#b0a8c4" }}>
+                Every PR is a learning moment.
+              </p>
+            </div>
+          </div>
+          <a
+            href="https://www.producthunt.com/products/sphinx-ci?embed=true&utm_source=embed&utm_medium=post_embed"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-1 mt-2 px-4 py-2 rounded-lg text-sm font-semibold transition-colors"
+            style={{ background: "#ff6154", color: "white" }}
+          >
+            Check it out on Product Hunt →
+          </a>
+        </div>
+      </section>
+
       {/* Footer */}
       <footer className="px-6 py-8 border-t text-sm" style={{ borderColor: "#252036", color: "#8b85a0" }}>
         <div className="flex flex-col sm:flex-row items-center justify-between max-w-4xl mx-auto gap-3">
