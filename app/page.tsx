@@ -372,6 +372,10 @@ export default async function Home() {
               Pricing
             </Link>
             <span style={{ color: "#252036" }}>·</span>
+            <Link href="/support" className="transition-colors" style={{ color: "#b0a8c4" }}>
+              Support
+            </Link>
+            <span style={{ color: "#252036" }}>·</span>
             <a
               href="https://skillberg.app"
               target="_blank"
