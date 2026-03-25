@@ -1,15 +1,26 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import { useCallback } from "react";
 
 export default function LanguageSwitcher({ locale }: { locale: "en" | "fr" }) {
   const router = useRouter();
 
-  function switchLocale() {
+  const switchLocale = useCallback(() => {
     const newLocale = locale === "en" ? "fr" : "en";
     document.cookie = `locale=${newLocale};path=/;max-age=31536000`;
-    router.refresh();
-  }
+
+    // Fade out, refresh, fade back in
+    document.body.style.transition = "opacity 0.15s ease";
+    document.body.style.opacity = "0";
+    setTimeout(() => {
+      router.refresh();
+      // Fade back in after refresh
+      requestAnimationFrame(() => {
+        document.body.style.opacity = "1";
+      });
+    }, 150);
+  }, [locale, router]);
 
   return (
     <button
