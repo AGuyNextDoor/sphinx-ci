@@ -12,7 +12,7 @@ permissions:
 jobs:
   quiz:
     # Only run on PR comments (not issue comments) containing the keyword
-    if: github.event.issue.pull_request && contains(github.event.comment.body, '/sphinx')
+    if: github.event.issue.pull_request && contains(github.event.comment.body, '@sphinx-ci')
     runs-on: ubuntu-latest
     steps:
       - name: Get PR details

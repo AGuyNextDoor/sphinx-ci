@@ -56,7 +56,7 @@ export default function RepoCard({
   const [passingScore, setPassingScore] = useState(initialConfig?.passingScore ?? 70);
   const [maxAttempts, setMaxAttempts] = useState(initialConfig?.maxAttempts ?? 3);
   const [quizLanguage, setQuizLanguage] = useState<"fr" | "en">(initialConfig?.language ?? "fr");
-  const [keyword, setKeyword] = useState(initialConfig?.keyword ?? "/sphinx");
+  const [keyword, setKeyword] = useState(initialConfig?.keyword ?? "@sphinx-ci");
 
   function showToast(msg: string) {
     setToast(msg);
@@ -202,7 +202,7 @@ export default function RepoCard({
         {/* Keyword */}
         <div>
           <label className={labelClass}>{t.repoCard.keyword}</label>
-          <input type="text" value={keyword} onChange={(e) => setKeyword(e.target.value)} placeholder="/sphinx" className={inputClass} />
+          <input type="text" value={keyword} onChange={(e) => setKeyword(e.target.value)} placeholder="@sphinx-ci" className={inputClass} />
         </div>
 
         {error && <p className="text-xs text-red-400">{error}</p>}

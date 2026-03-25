@@ -21,7 +21,7 @@ export const DEFAULT_QUIZ_CONFIG: QuizConfig = {
   passingScore: 70,
   maxAttempts: 3,
   language: "fr",
-  keyword: "/sphinx",
+  keyword: "@sphinx-ci",
 };
 
 const PROMPTS = {

@@ -7,7 +7,7 @@
 
 **sphinx-ci** generates an AI quiz from each Pull Request diff. The developer proves they understand their own code before the merge — or they go back and read it again.
 
-Comment `/sphinx` on a PR → quiz generated from the diff → dev answers → merge unlocked or blocked.
+Comment `@sphinx-ci` on a PR → quiz generated from the diff → dev answers → merge unlocked or blocked.
 
 ---
 
@@ -39,7 +39,7 @@ Comment `/sphinx` on a PR → quiz generated from the diff → dev answers → m
 | **Passing score** | Minimum score to unlock merge | 70% |
 | **Attempts** | Max number of attempts | 3 |
 | **Language** | Language of the questions | English |
-| **Keyword** | Keyword to trigger the quiz in a PR comment | `/sphinx` |
+| **Keyword** | Keyword to trigger the quiz in a PR comment | `@sphinx-ci` |
 
 5. Click **Generate API key**
 6. **Copy the API key** displayed (`spx_...`) — you'll need it in the next step
@@ -183,7 +183,7 @@ To make the quiz **actually block** the merge:
 ## Usage
 
 1. A developer opens a PR
-2. Someone comments **`/sphinx`** on the PR
+2. Someone comments **`@sphinx-ci`** on the PR
 3. The Sphinx generates a quiz and posts a comment with the link
 4. The developer answers the quiz in their browser
 5. A comment is posted on the PR with the result:
@@ -242,14 +242,14 @@ You can also:
 ### Architecture
 
 - **Central hub** (`sphinx-ci.dev`): Next.js app that generates quizzes via Claude, hosts them, and reports scores to GitHub
-- **GitHub Action**: workflow in each protected repo that sends the diff to the hub when `/sphinx` is commented
+- **GitHub Action**: workflow in each protected repo that sends the diff to the hub when `@sphinx-ci` is commented
 
 > **No GitHub App needed.** We use a GitHub OAuth App for login and the user's OAuth token to post results on PRs.
 
 ### Technical flow
 
 ```
-/sphinx comment on a PR
+@sphinx-ci comment on a PR
   → GitHub Action sends the diff to the hub
   → Hub generates N questions via Claude (using the user's Anthropic key)
   → Quiz saved in DB, "pending" status check on the commit
@@ -331,7 +331,7 @@ To deploy on Vercel: connect the repo from the Vercel dashboard and configure th
 
 | Problem | Solution |
 |---------|----------|
-| Workflow doesn't trigger | Make sure `pr-quiz.yml` is on the main branch and the comment contains the keyword (`/sphinx`) |
+| Workflow doesn't trigger | Make sure `pr-quiz.yml` is on the main branch and the comment contains the keyword (`@sphinx-ci`) |
 | `exit code 22` error | Check `PR_QUIZ_API_KEY` (secret) and `PR_QUIZ_HUB_URL` (variable) in GitHub settings |
 | `exit code 7` error | `PR_QUIZ_HUB_URL` points to `localhost` instead of the Vercel URL |
 | No result comment on PR | Sign out and sign back in on sphinx-ci to refresh the OAuth token |

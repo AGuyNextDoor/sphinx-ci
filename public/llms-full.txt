@@ -15,7 +15,7 @@ sphinx-ci is a CI/CD tool that generates AI-powered code comprehension quizzes f
    - Reports results back to GitHub (PR comments + status checks)
 
 2. **GitHub Action**: A workflow file (.github/workflows/pr-quiz.yml) added to each protected repo that:
-   - Triggers on `/sphinx` comments on PRs
+   - Triggers on `@sphinx-ci` comments on PRs
    - Extracts the code diff
    - Sends it to the hub
    - Posts the quiz link as a PR comment
@@ -32,7 +32,7 @@ sphinx-ci is a CI/CD tool that generates AI-powered code comprehension quizzes f
 - passingScore: 50-90% (default 70%)
 - maxAttempts: 1-5 (default 3)
 - language: "en" | "fr" (default "en")
-- keyword: trigger keyword (default "/sphinx")
+- keyword: trigger keyword (default "@sphinx-ci")
 
 ### Security
 - Correct answers are never sent to the browser before submission
@@ -77,7 +77,7 @@ Regenerates (resets) the API key. Requires OAuth session.
 Revokes a team and deletes associated quizzes. Requires OAuth session.
 
 ### GitHub Action Workflow
-Trigger: issue_comment (created) containing '/sphinx'
+Trigger: issue_comment (created) containing '@sphinx-ci'
 The workflow:
 1. Gets PR details (head_sha, base_sha, title)
 2. Checks out the repo

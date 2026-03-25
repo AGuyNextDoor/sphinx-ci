@@ -33,8 +33,8 @@ export const dictionaries = {
       step1desc: "Sign in with GitHub and configure sphinx-ci on the repos of your choice.",
       step2title: "Add the workflow",
       step2desc: "Copy the GitHub Action file and add the secrets to your repo.",
-      step3title: "Comment /sphinx",
-      step3desc: "On a PR, comment /sphinx. A quiz is automatically generated from the diff.",
+      step3title: "Comment @sphinx-ci",
+      step3desc: "On a PR, comment @sphinx-ci. A quiz is automatically generated from the diff.",
       step4title: "Pass the quiz",
       step4desc: "Answer questions about your code. Sufficient score = merge unlocked.",
       whyTitle: "Why sphinx-ci?",
@@ -72,9 +72,9 @@ export const dictionaries = {
       step2: "Add secrets to your repo",
       step2desc: "Add PR_QUIZ_API_KEY and ANTHROPIC_API_KEY as secrets, and PR_QUIZ_HUB_URL as a variable in your repo's GitHub Actions settings.",
       step3: "Add the workflow file",
-      step3desc: "Copy the pr-quiz.yml workflow to .github/workflows/ in your repo. Then comment /sphinx on any PR to test.",
+      step3desc: "Copy the pr-quiz.yml workflow to .github/workflows/ in your repo. Then comment @sphinx-ci on any PR to test.",
       step3cta: "See README for the workflow",
-      done: "You're all set! Comment /sphinx on a PR to try it out.",
+      done: "You're all set! Comment @sphinx-ci on a PR to try it out.",
     },
     // Dashboard
     dashboard: {
@@ -106,7 +106,7 @@ export const dictionaries = {
       failed: "Failed",
       rate: "Rate",
       avg: "Avg",
-      noData: "No quiz data yet. Quizzes will appear here after your team starts using /sphinx.",
+      noData: "No quiz data yet. Quizzes will appear here after your team starts using @sphinx-ci.",
       last30: "Last 30 days",
     },
     // Repos
@@ -149,7 +149,7 @@ export const dictionaries = {
     // Quiz page
     quiz: {
       expired: "Quiz expired",
-      expiredDesc: "This quiz has expired. Comment /sphinx on the PR to generate a new one.",
+      expiredDesc: "This quiz has expired. Comment @sphinx-ci on the PR to generate a new one.",
       passed: "Quiz passed",
       passedScore: "Score:",
       passedDesc: "Merge is unlocked.",
@@ -239,8 +239,8 @@ export const dictionaries = {
       step1desc: "Connecte-toi avec GitHub et configure sphinx-ci sur les repos de ton choix.",
       step2title: "Ajoute le workflow",
       step2desc: "Copie le fichier GitHub Action et ajoute les secrets dans ton repo.",
-      step3title: "Commente /sphinx",
-      step3desc: "Sur une PR, commente /sphinx. Un quiz est généré depuis le diff.",
+      step3title: "Commente @sphinx-ci",
+      step3desc: "Sur une PR, commente @sphinx-ci. Un quiz est généré depuis le diff.",
       step4title: "Passe le quiz",
       step4desc: "Réponds aux questions sur ton code. Score suffisant = merge débloqué.",
       whyTitle: "Pourquoi sphinx-ci ?",
@@ -276,9 +276,9 @@ export const dictionaries = {
       step2: "Ajoute les secrets à ton repo",
       step2desc: "Ajoute PR_QUIZ_API_KEY et ANTHROPIC_API_KEY comme secrets, et PR_QUIZ_HUB_URL comme variable dans les settings GitHub Actions de ton repo.",
       step3: "Ajoute le fichier workflow",
-      step3desc: "Copie le workflow pr-quiz.yml dans .github/workflows/ de ton repo. Puis commente /sphinx sur une PR pour tester.",
+      step3desc: "Copie le workflow pr-quiz.yml dans .github/workflows/ de ton repo. Puis commente @sphinx-ci sur une PR pour tester.",
       step3cta: "Voir le README pour le workflow",
-      done: "C'est prêt ! Commente /sphinx sur une PR pour essayer.",
+      done: "C'est prêt ! Commente @sphinx-ci sur une PR pour essayer.",
     },
     dashboard: {
       title: "Dashboard",
@@ -308,7 +308,7 @@ export const dictionaries = {
       failed: "Échoués",
       rate: "Taux",
       avg: "Moy",
-      noData: "Aucune donnée de quiz. Les résultats apparaîtront ici après que ton équipe commence à utiliser /sphinx.",
+      noData: "Aucune donnée de quiz. Les résultats apparaîtront ici après que ton équipe commence à utiliser @sphinx-ci.",
       last30: "30 derniers jours",
     },
     repos: {
@@ -347,7 +347,7 @@ export const dictionaries = {
     },
     quiz: {
       expired: "Quiz expiré",
-      expiredDesc: "Ce quiz a expiré. Commente /sphinx sur la PR pour en générer un nouveau.",
+      expiredDesc: "Ce quiz a expiré. Commente @sphinx-ci sur la PR pour en générer un nouveau.",
       passed: "Quiz réussi",
       passedScore: "Score :",
       passedDesc: "Le merge est débloqué.",

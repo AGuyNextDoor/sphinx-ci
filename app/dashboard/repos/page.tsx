@@ -128,7 +128,7 @@ export default async function ReposPage() {
                       {t.dashboard.scoreMin} {config.passingScore || 70}%
                     </span>
                     <span className="text-xs px-2 py-1 rounded" style={{ background: "rgba(201,168,76,0.1)", color: "#c9a84c" }}>
-                      {config.keyword || "/sphinx"}
+                      {config.keyword || "@sphinx-ci"}
                     </span>
                     <span className="text-xs" style={{ color: "#8b85a0" }}>
                       — {t.repos.configuredBy} {team.user?.githubLogin || t.repos.teamMember}

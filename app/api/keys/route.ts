@@ -54,7 +54,7 @@ export async function POST(request: NextRequest) {
     passingScore: body.config?.passingScore ?? 70,
     maxAttempts: body.config?.maxAttempts ?? 3,
     language: body.config?.language ?? "fr",
-    keyword: body.config?.keyword ?? "/sphinx",
+    keyword: body.config?.keyword ?? "@sphinx-ci",
   };
 
   const team = await prisma.team.create({

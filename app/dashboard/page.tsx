@@ -211,7 +211,7 @@ export default async function DashboardPage() {
                       {config.language === "en" ? "EN" : "FR"}
                     </span>
                     <span className="text-xs px-2 py-1 rounded" style={{ background: "rgba(201,168,76,0.1)", color: "#c9a84c" }}>
-                      {config.keyword || "/sphinx"}
+                      {config.keyword || "@sphinx-ci"}
                     </span>
                   </div>
                 </div>
