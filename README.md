@@ -264,7 +264,7 @@ Commentaire /sphinx sur une PR
 
 - Les reponses correctes ne sont **jamais envoyees au navigateur** avant la soumission
 - Le score est calcule **entierement cote serveur**
-- A chaque tentative echouee, de **nouvelles questions** sont generees (anti-triche)
+- A chaque tentative, de **nouvelles questions** sont generees pour favoriser l'apprentissage
 - Chaque utilisateur fournit **sa propre cle Anthropic** (pas de cle partagee)
 
 ### Stack
