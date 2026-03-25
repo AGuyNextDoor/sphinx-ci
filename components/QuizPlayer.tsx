@@ -161,18 +161,20 @@ export default function QuizPlayer({
       </div>
 
       {/* Question */}
-      <div className="rounded-lg p-6 mb-6 border" style={{ background: "#1a1628", borderColor: "#252036" }}>
-        <p className="text-sm mb-3" style={{ color: "#b0a8c4" }}>
+      <div className="rounded-lg p-6 mb-6 border" style={{ background: "#1a1628", borderColor: "#252036" }} role="region" aria-label={`${t.player.question} ${currentIndex + 1}`}>
+        <p className="text-sm mb-3" style={{ color: "#b0a8c4" }} aria-live="polite">
           {t.player.question} {currentIndex + 1}/{questions.length}
         </p>
-        <p className="text-lg text-white mb-6">{currentQuestion.question}</p>
+        <p className="text-lg text-white mb-6" id={`question-${currentIndex}`}>{currentQuestion.question}</p>
 
-        <div className="space-y-3">
+        <div className="space-y-3" role="radiogroup" aria-labelledby={`question-${currentIndex}`}>
           {currentQuestion.options.map((option, i) => (
             <button
               key={i}
               onClick={() => selectOption(i)}
               disabled={confirmed}
+              role="radio"
+              aria-checked={selectedOption === i}
               className={`w-full text-left px-4 py-3 rounded-lg border transition-colors ${
                 confirmed && selectedOption === i
                   ? "text-white"

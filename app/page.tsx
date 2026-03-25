@@ -368,6 +368,10 @@ export default async function Home() {
         <div className="flex flex-col sm:flex-row items-center justify-between max-w-4xl mx-auto gap-3">
           <p>{t.landing.footer}</p>
           <div className="flex items-center gap-4">
+            <Link href="/pricing" className="transition-colors" style={{ color: "#b0a8c4" }}>
+              Pricing
+            </Link>
+            <span style={{ color: "#252036" }}>·</span>
             <a
               href="https://skillberg.app"
               target="_blank"

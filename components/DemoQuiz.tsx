@@ -107,11 +107,13 @@ export default function DemoQuiz({ locale }: { locale: "en" | "fr" }) {
               key={qi}
               className="rounded-xl p-5 border"
               style={{ background: "#0f0c1a", borderColor: "#252036" }}
+              role="region"
+              aria-label={`Question ${qi + 1}`}
             >
               <p className="text-xs mb-2" style={{ color: "#8b85a0" }}>
                 Question {qi + 1}/{questions.length}
               </p>
-              <p className="text-white mb-4">{q.question}</p>
+              <p className="text-white mb-4" id={`demo-q-${qi}`}>{q.question}</p>
               <div className="space-y-2">
                 {q.options.map((opt, oi) => {
                   const isCorrect = oi === q.correct;

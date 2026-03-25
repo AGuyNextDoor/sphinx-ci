@@ -93,7 +93,7 @@ export const dictionaries = {
     // Quiz history
     quizzes: {
       title: "Quiz history",
-      subtitle: "The last 50 quizzes generated on your repos.",
+      subtitle: "All quizzes generated on your repos.",
       empty: "No quizzes yet. Configure a repo and open a PR to get started.",
       repo: "Repo",
       pr: "PR",
@@ -105,6 +105,13 @@ export const dictionaries = {
       passed: "Passed",
       failed: "Failed",
       expired: "Expired",
+    },
+    // Pagination
+    pagination: {
+      prev: "← Previous",
+      next: "Next →",
+      page: "Page",
+      of: "of",
     },
     // Quiz page
     quiz: {
@@ -255,7 +262,7 @@ export const dictionaries = {
     },
     quizzes: {
       title: "Historique des quiz",
-      subtitle: "Les 50 derniers quiz générés sur tes repos.",
+      subtitle: "Tous les quiz générés sur tes repos.",
       empty: "Aucun quiz pour le moment. Configure un repo et ouvre une PR pour commencer.",
       repo: "Repo",
       pr: "PR",
@@ -267,6 +274,12 @@ export const dictionaries = {
       passed: "Réussi",
       failed: "Échoué",
       expired: "Expiré",
+    },
+    pagination: {
+      prev: "← Précédent",
+      next: "Suivant →",
+      page: "Page",
+      of: "sur",
     },
     quiz: {
       expired: "Quiz expiré",
