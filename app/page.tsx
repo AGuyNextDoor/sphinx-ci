@@ -359,18 +359,30 @@ export default async function Home() {
       </section>
 
       {/* Footer */}
-      <footer className="px-6 py-8 border-t text-center text-sm" style={{ borderColor: "#252036", color: "#8b85a0" }}>
-        <div className="flex items-center justify-center gap-4">
+      <footer className="px-6 py-8 border-t text-sm" style={{ borderColor: "#252036", color: "#8b85a0" }}>
+        <div className="flex flex-col sm:flex-row items-center justify-between max-w-4xl mx-auto gap-3">
           <p>{t.landing.footer}</p>
-          <a
-            href={`https://github.com/${GITHUB_REPO}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="transition-colors"
-            style={{ color: "#b0a8c4" }}
-          >
-            GitHub
-          </a>
+          <div className="flex items-center gap-4">
+            <a
+              href="https://skillberg.app"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="transition-colors"
+              style={{ color: "#b0a8c4" }}
+            >
+              Built by <span style={{ color: "#c9a84c" }}>Skillberg</span>
+            </a>
+            <span style={{ color: "#252036" }}>·</span>
+            <a
+              href={`https://github.com/${GITHUB_REPO}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="transition-colors"
+              style={{ color: "#b0a8c4" }}
+            >
+              GitHub
+            </a>
+          </div>
         </div>
       </footer>
     </div>
