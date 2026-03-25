@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { validateApiKey } from "@/lib/auth";
 import { generateQuizQuestions, DEFAULT_QUIZ_CONFIG } from "@/lib/claude";
 import type { QuizConfig } from "@/lib/claude";
-import { updateCommitStatus } from "@/lib/github";
+import { updateCommitStatus, getGitHubToken } from "@/lib/github";
 import { prisma } from "@/lib/db";
 
 export async function POST(request: NextRequest) {
@@ -118,12 +118,13 @@ export async function POST(request: NextRequest) {
     },
   });
 
-  // Post pending status on GitHub
+  // Post pending status on GitHub (use OAuth token for durability)
+  const ghToken = await getGitHubToken(team.id, callback_token);
   try {
     await updateCommitStatus(
       repo,
       head_sha,
-      callback_token,
+      ghToken,
       "pending",
       config.language === "en"
         ? "Quiz pending — complete it to unlock merge"
