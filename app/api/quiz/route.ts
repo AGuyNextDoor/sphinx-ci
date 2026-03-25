@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { validateApiKey } from "@/lib/auth";
 import { generateQuizQuestions, DEFAULT_QUIZ_CONFIG } from "@/lib/claude";
 import type { QuizConfig } from "@/lib/claude";
-import { updateCommitStatus, getGitHubToken } from "@/lib/github";
+import { updateCommitStatus, postPRComment, getGitHubToken } from "@/lib/github";
 import { prisma } from "@/lib/db";
 import { encrypt, decrypt } from "@/lib/encryption";
 import { checkRateLimit } from "@/lib/rate-limit";
@@ -131,10 +131,25 @@ export async function POST(request: NextRequest) {
     console.error("Failed to post GitHub status:", error);
   }
 
+  // Post quiz link as PR comment (from admin's account, not github-actions)
+  const quizUrl = `${process.env.NEXT_PUBLIC_APP_URL}/q/${quiz.id}`;
+  try {
+    await postPRComment(
+      repo,
+      pr_number,
+      ghToken,
+      config.language === "en"
+        ? `## Code comprehension quiz required\n\nComplete the quiz to unlock the merge.\n\n[${quizUrl}](${quizUrl})\n\n*The Sphinx awaits your answer.*`
+        : `## Quiz de compréhension requis\n\nComplète le quiz pour débloquer le merge.\n\n[${quizUrl}](${quizUrl})\n\n*Le Sphinx attend ta réponse.*`
+    );
+  } catch (error) {
+    console.error("Failed to post quiz comment:", error);
+  }
+
   return NextResponse.json(
     {
       quiz_id: quiz.id,
-      quiz_url: `${process.env.NEXT_PUBLIC_APP_URL}/q/${quiz.id}`,
+      quiz_url: quizUrl,
       expires_at: expiresAt.toISOString(),
     },
     { status: 201 }

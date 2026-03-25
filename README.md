@@ -160,13 +160,7 @@ jobs:
             exit 0
           fi
 
-          gh pr comment ${PR_NUMBER} --body "## Code comprehension quiz required
-
-          Complete the quiz to unlock the merge.
-
-          [$QUIZ_URL]($QUIZ_URL)
-
-          *The Sphinx awaits your answer.*"
+          echo "Quiz created: $QUIZ_URL"
 ```
 
 Commit and push this file to your repo's main branch.

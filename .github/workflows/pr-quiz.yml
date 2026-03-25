@@ -88,15 +88,8 @@ jobs:
             curl -sf -X POST "https://api.github.com/repos/${{ github.repository }}/statuses/${HEAD_SHA}" \
               -H "Authorization: token $GITHUB_TOKEN" \
               -H "Accept: application/vnd.github.v3+json" \
-              -d '{"state":"success","context":"pr-quiz","description":"Pas de changement de code — quiz ignore"}'
+              -d '{"state":"success","context":"pr-quiz","description":"No code changes — quiz skipped"}'
             exit 0
           fi
 
-          # Post comment on the PR with quiz link
-          gh pr comment ${PR_NUMBER} --body "## Quiz de comprehension requis
-
-          Pour debloquer le merge, complete ce quiz sur ton code.
-
-          [$QUIZ_URL]($QUIZ_URL)
-
-          *Le Sphinx attend ta reponse.*"
+          echo "Quiz created: $QUIZ_URL"

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { updateCommitStatus, postPRComment, getGitHubToken } from "@/lib/github";
+import { auth } from "@/lib/auth-options";
 import { DEFAULT_QUIZ_CONFIG } from "@/lib/claude";
 import type { QuizConfig } from "@/lib/claude";
 
@@ -104,18 +105,32 @@ export async function POST(
     },
   });
 
-  // Use the user's OAuth token (persisted) instead of the expired GITHUB_TOKEN
-  const token = await getGitHubToken(quiz.team.id, quiz.callbackToken);
+  // Use the admin's token for status checks (needs repo write access)
+  const adminToken = await getGitHubToken(quiz.team.id, quiz.callbackToken);
+
+  // Use the quiz taker's token for PR comments (shows their profile)
+  let commentToken = adminToken;
+  const session = await auth();
+  if (session?.user?.id) {
+    const account = await prisma.account.findFirst({
+      where: { userId: session.user.id, provider: "github" },
+      select: { access_token: true },
+    });
+    if (account?.access_token) {
+      commentToken = account.access_token;
+    }
+  }
+
   const appUrl = process.env.NEXT_PUBLIC_APP_URL || "";
   const quizUrl = `${appUrl}/q/${quiz.id}`;
 
-  // Update GitHub status + post comment on PR
+  // Update GitHub status (admin token) + post comment (quiz taker's token)
   try {
     if (newStatus === "PASSED") {
       await updateCommitStatus(
         quiz.repo,
         quiz.headSha,
-        token,
+        adminToken,
         "success",
         config.language === "en"
           ? `Quiz passed — score ${score}/100`
@@ -125,7 +140,7 @@ export async function POST(
       await postPRComment(
         quiz.repo,
         quiz.prNumber,
-        token,
+        commentToken,
         config.language === "en"
           ? `## Quiz passed ✅\n\nScore: **${score}/100** (${correctCount}/${numQuestions})\n\nMerge is unlocked.`
           : `## Quiz réussi ✅\n\nScore : **${score}/100** (${correctCount}/${numQuestions})\n\nLe merge est débloqué.`
@@ -134,7 +149,7 @@ export async function POST(
       await updateCommitStatus(
         quiz.repo,
         quiz.headSha,
-        token,
+        adminToken,
         "failure",
         config.language === "en"
           ? `Quiz failed — score ${score}/100 (max attempts reached)`
@@ -144,7 +159,7 @@ export async function POST(
       await postPRComment(
         quiz.repo,
         quiz.prNumber,
-        token,
+        commentToken,
         config.language === "en"
           ? `## Quiz failed ❌\n\nScore: **${score}/100** (${correctCount}/${numQuestions})\n\nAll attempts used. Merge remains blocked.`
           : `## Quiz échoué ❌\n\nScore : **${score}/100** (${correctCount}/${numQuestions})\n\nToutes les tentatives épuisées. Le merge reste bloqué.`
@@ -155,7 +170,7 @@ export async function POST(
       await postPRComment(
         quiz.repo,
         quiz.prNumber,
-        token,
+        commentToken,
         config.language === "en"
           ? `## Quiz not passed yet\n\nScore: **${score}/100** (${correctCount}/${numQuestions})\n\n${remaining} attempt${remaining > 1 ? "s" : ""} remaining. [Retry →](${quizUrl})`
           : `## Quiz pas encore réussi\n\nScore : **${score}/100** (${correctCount}/${numQuestions})\n\n${remaining} tentative${remaining > 1 ? "s" : ""} restante${remaining > 1 ? "s" : ""}. [Réessayer →](${quizUrl})`
