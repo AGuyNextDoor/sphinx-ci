@@ -46,6 +46,32 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
+      <head>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "SoftwareApplication",
+              name: "sphinx-ci",
+              description: "AI-powered code comprehension quizzes for Pull Requests. The Sphinx makes you understand your own code before merge.",
+              url: appUrl,
+              applicationCategory: "DeveloperApplication",
+              operatingSystem: "Web",
+              offers: {
+                "@type": "Offer",
+                price: "0",
+                priceCurrency: "USD",
+              },
+              author: {
+                "@type": "Organization",
+                name: "Skillberg",
+                url: "https://skillberg.app",
+              },
+            }),
+          }}
+        />
+      </head>
       <body className={inter.className}>
         <a
           href="#main-content"

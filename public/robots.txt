@@ -1,0 +1,7 @@
+User-agent: *
+Allow: /
+Disallow: /api/
+Disallow: /dashboard/
+Disallow: /q/
+
+Sitemap: https://sphinx-ci.vercel.app/sitemap.xml

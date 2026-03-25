@@ -1,0 +1,112 @@
+# sphinx-ci — Full Documentation for LLMs
+
+## Overview
+sphinx-ci is a CI/CD tool that generates AI-powered code comprehension quizzes from Pull Request diffs on GitHub. It is free, open source, and designed to encourage developers to understand their own code before merging.
+
+## Architecture
+
+### Two-part system
+1. **Central hub** (sphinx-ci.vercel.app): A Next.js 14 web application that:
+   - Authenticates users via GitHub OAuth
+   - Lets admins configure repos and generate API keys
+   - Receives PR diffs from GitHub Actions
+   - Generates quiz questions using Anthropic Claude
+   - Hosts the quiz UI
+   - Reports results back to GitHub (PR comments + status checks)
+
+2. **GitHub Action**: A workflow file (.github/workflows/pr-quiz.yml) added to each protected repo that:
+   - Triggers on `/sphinx` comments on PRs
+   - Extracts the code diff
+   - Sends it to the hub
+   - Posts the quiz link as a PR comment
+
+### Database schema
+- **User**: GitHub OAuth users (id, name, email, image, githubId, githubLogin)
+- **Account**: OAuth accounts linked to users (provider, access_token, etc.)
+- **Team**: Repo configurations (name=repo full name, apiKey, userId, anthropicApiKey encrypted, quizConfig JSON)
+- **Quiz**: Generated quizzes (repo, prNumber, headSha, prTitle, diff, questions JSON, status, score, attempts, maxAttempts, callbackToken, expiresAt)
+- **QuizStatus**: PENDING | PASSED | FAILED | EXPIRED
+
+### Quiz configuration (per repo)
+- numQuestions: 5-20 (default 10)
+- passingScore: 50-90% (default 70%)
+- maxAttempts: 1-5 (default 3)
+- language: "en" | "fr" (default "en")
+- keyword: trigger keyword (default "/sphinx")
+
+### Security
+- Correct answers are never sent to the browser before submission
+- Score is calculated entirely server-side
+- New questions are generated on each retry attempt
+- Anthropic API keys are encrypted with AES-256-GCM before storage
+- Rate limiting: 10 quizzes per hour per API key (Redis if available, DB fallback)
+- Quiz pages require GitHub authentication
+
+### API Endpoints
+
+#### POST /api/quiz
+Creates a new quiz. Called by the GitHub Action.
+- Header: X-API-Key (team API key)
+- Body: { repo, pr_number, head_sha, pr_title, diff, files_changed, callback_token, anthropic_api_key }
+- Returns: { quiz_id, quiz_url, expires_at } or { skipped: true }
+
+#### POST /api/quiz/:id/submit
+Submits quiz answers. Called from the browser.
+- Body: { answers: number[] }
+- Returns: { score, passed, correct, total, attempts_remaining, results[] }
+- Side effects: Updates GitHub status check, posts PR comment
+
+#### GET /api/quiz/:id/regenerate
+Generates new questions for a retry attempt.
+- Returns: { success: true }
+
+#### POST /api/keys
+Creates a new team/API key for a repo. Requires OAuth session.
+- Body: { repo, config }
+- Returns: { id, apiKey, repo }
+
+#### PUT /api/keys/:id
+Updates repo configuration. Requires OAuth session.
+- Body: { config }
+
+#### PATCH /api/keys/:id
+Regenerates (resets) the API key. Requires OAuth session.
+- Returns: { apiKey }
+
+#### DELETE /api/keys/:id
+Revokes a team and deletes associated quizzes. Requires OAuth session.
+
+### GitHub Action Workflow
+Trigger: issue_comment (created) containing '/sphinx'
+The workflow:
+1. Gets PR details (head_sha, base_sha, title)
+2. Checks out the repo
+3. Sets pending status on the commit
+4. Extracts code diff (filtered by file extensions, max 12KB)
+5. Sends to hub POST /api/quiz
+6. Posts quiz link as PR comment
+
+### Environment Variables
+Hub (Vercel):
+- DATABASE_URL: PostgreSQL connection string
+- NEXT_PUBLIC_APP_URL: Public URL of the hub
+- GITHUB_CLIENT_ID: OAuth App client ID
+- GITHUB_CLIENT_SECRET: OAuth App client secret
+- AUTH_SECRET: Session encryption secret
+- ENCRYPTION_KEY (optional): Key for encrypting Anthropic API keys
+- UPSTASH_REDIS_REST_URL (optional): Redis for rate limiting
+- UPSTASH_REDIS_REST_TOKEN (optional): Redis token
+
+Repo (GitHub Actions secrets/variables):
+- PR_QUIZ_API_KEY (secret): Team API key from sphinx-ci dashboard
+- ANTHROPIC_API_KEY (secret): User's Anthropic API key
+- PR_QUIZ_HUB_URL (variable): URL of the hub (e.g., https://sphinx-ci.vercel.app)
+
+### Internationalization
+The app supports English (default) and French. Language is stored in a cookie and switchable via a button in the navbar.
+
+### Team/Organization Support
+- One admin configures repos, all team members can take quizzes
+- Devs see repos configured by others in read-only mode
+- Organization repos require OAuth App approval by org admin
+- Only the admin who configured a repo can edit/revoke it

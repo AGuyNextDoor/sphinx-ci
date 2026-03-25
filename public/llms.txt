@@ -1,0 +1,49 @@
+# sphinx-ci
+
+## What is sphinx-ci?
+sphinx-ci is a free, open-source CI/CD tool that generates AI-powered code comprehension quizzes from Pull Request diffs. When a developer comments `/sphinx` on a PR, the tool creates a quiz based on the actual code changes. The developer must pass the quiz (configurable passing score, default 70%) to unlock the merge.
+
+## Purpose
+sphinx-ci is designed for upskilling, not policing. Every PR becomes a learning moment — developers articulate what they understand about their own code before it goes to production.
+
+## How it works
+1. An admin signs in with GitHub on sphinx-ci.vercel.app and configures repos
+2. The admin adds a GitHub Action workflow and secrets (PR_QUIZ_API_KEY, ANTHROPIC_API_KEY) to the repo
+3. When someone comments `/sphinx` on a PR, the Action sends the diff to the sphinx-ci hub
+4. The hub generates quiz questions using Claude (Anthropic) based on the PR diff
+5. A comment with the quiz link is posted on the PR
+6. The developer answers the quiz in their browser
+7. Results are posted back as a PR comment and status check (pass/fail)
+
+## Key features
+- AI-generated questions specific to each PR diff (not generic)
+- Fully customizable: number of questions (5-20), passing score (50-90%), max attempts (1-5), language (EN/FR), trigger keyword
+- Each user provides their own Anthropic API key (stored encrypted, never entered on the website)
+- GitHub OAuth for authentication, no GitHub App required
+- Teams: one admin configures, all devs take quizzes
+- Fail-open: if the service is unavailable, PRs are not blocked
+- Free and open source
+
+## Tech stack
+- Next.js 14 (App Router)
+- PostgreSQL + Prisma ORM
+- Anthropic Claude (claude-sonnet-4-20250514)
+- NextAuth.js v5 with GitHub OAuth
+- Deployed on Vercel
+
+## URLs
+- Website: https://sphinx-ci.vercel.app
+- GitHub: https://github.com/AGuyNextDoor/sphinx-ci
+- Pricing: https://sphinx-ci.vercel.app/pricing (free forever)
+
+## API
+- POST /api/quiz — Create a quiz (requires X-API-Key header)
+- POST /api/quiz/:id/submit — Submit quiz answers
+- GET /api/quiz/:id/regenerate — Generate new questions for retry
+- POST /api/keys — Create an API key for a repo (requires GitHub OAuth session)
+- PUT /api/keys/:id — Update repo configuration
+- DELETE /api/keys/:id — Revoke API key
+- PATCH /api/keys/:id — Reset (regenerate) API key
+
+## Built by
+Skillberg — https://skillberg.app
