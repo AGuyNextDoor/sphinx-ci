@@ -1,6 +1,8 @@
 import { auth, signOut } from "@/lib/auth-options";
 import { redirect } from "next/navigation";
 import Link from "next/link";
+import { getLocale, getDictionary } from "@/lib/i18n-server";
+import LanguageSwitcher from "@/components/LanguageSwitcher";
 
 export default async function DashboardLayout({
   children,
@@ -9,6 +11,8 @@ export default async function DashboardLayout({
 }) {
   const session = await auth();
   if (!session?.user) redirect("/login");
+  const locale = await getLocale();
+  const t = getDictionary(locale);
 
   return (
     <div className="min-h-screen" style={{ background: "#0f0c1a" }}>
@@ -29,13 +33,13 @@ export default async function DashboardLayout({
             </Link>
             <div className="flex items-center gap-4 text-sm">
               <Link href="/dashboard" className="transition-colors hover:text-white" style={{ color: "#b0a8c4" }}>
-                Dashboard
+                {t.nav.dashboard}
               </Link>
               <Link href="/dashboard/repos" className="transition-colors hover:text-white" style={{ color: "#b0a8c4" }}>
-                Repos
+                {t.nav.repos}
               </Link>
               <Link href="/dashboard/quizzes" className="transition-colors hover:text-white" style={{ color: "#b0a8c4" }}>
-                Quiz
+                {t.nav.quizzes}
               </Link>
             </div>
           </div>
@@ -52,6 +56,7 @@ export default async function DashboardLayout({
                 {session.user.githubLogin || session.user.name}
               </span>
             </div>
+            <LanguageSwitcher locale={locale} />
             <form
               action={async () => {
                 "use server";
@@ -63,7 +68,7 @@ export default async function DashboardLayout({
                 className="text-sm transition-colors"
                 style={{ color: "#8b85a0" }}
               >
-                Déconnexion
+                {t.nav.signOut}
               </button>
             </form>
           </div>

@@ -3,12 +3,15 @@ import { prisma } from "@/lib/db";
 import { redirect } from "next/navigation";
 import { getUserRepos } from "@/lib/github-api";
 import RepoCard from "@/components/RepoCard";
+import { getLocale, getDictionary } from "@/lib/i18n-server";
 
 export const dynamic = "force-dynamic";
 
 export default async function ReposPage() {
   const session = await auth();
   if (!session?.user || !session.accessToken) redirect("/login");
+  const locale = await getLocale();
+  const t = getDictionary(locale);
 
   const repos = await getUserRepos(session.accessToken);
   const repoNames = repos.map((r) => r.full_name);
@@ -43,16 +46,16 @@ export default async function ReposPage() {
   return (
     <div>
       <h1 className="text-2xl font-bold text-white mb-2" style={{ fontFamily: "Georgia, serif" }}>
-        Tes repos
+        {t.repos.title}
       </h1>
       <p className="text-sm mb-8" style={{ color: "#b0a8c4" }}>
-        Tes repos configurés et ceux disponibles à protéger.
+        {t.repos.subtitle}
       </p>
 
       {/* Configured repos */}
       <div className="mb-10">
         <h2 className="text-lg font-semibold text-white mb-4 flex items-center gap-2" style={{ fontFamily: "Georgia, serif" }}>
-          Repos configurés
+          {t.repos.configured}
           <span className="text-xs font-normal px-2 py-0.5 rounded-full" style={{ background: "rgba(201,168,76,0.1)", color: "#c9a84c" }}>
             {totalConfigured}
           </span>
@@ -61,7 +64,7 @@ export default async function ReposPage() {
         {totalConfigured === 0 ? (
           <div className="rounded-lg p-6 text-center border" style={{ background: "#1a1628", borderColor: "#252036" }}>
             <p style={{ color: "#b0a8c4" }}>
-              Aucun repo configuré. Choisis un repo ci-dessous pour commencer.
+              {t.repos.noneConfigured}
             </p>
           </div>
         ) : (
@@ -81,6 +84,7 @@ export default async function ReposPage() {
                   apiKey={team.apiKey}
                   teamId={team.id}
                   initialConfig={team.quizConfig as any}
+                  locale={locale}
                 />
               );
             })}
@@ -104,7 +108,7 @@ export default async function ReposPage() {
                             repo.private ? "text-yellow-400 bg-yellow-400/10" : "text-gray-400 bg-gray-400/10"
                           }`}
                         >
-                          {repo.private ? "privé" : "public"}
+                          {repo.private ? t.repos.private : t.repos.public}
                         </span>
                       </div>
                       {repo.description && <p className="text-sm text-gray-400 truncate">{repo.description}</p>}
@@ -113,21 +117,21 @@ export default async function ReposPage() {
                       className="ml-4 px-3 py-1 text-xs font-medium rounded"
                       style={{ color: "#c9a84c", background: "rgba(201,168,76,0.1)" }}
                     >
-                      Configuré
+                      {t.repoCard.configured}
                     </span>
                   </div>
                   <div className="mt-2 flex flex-wrap items-center gap-2">
                     <span className="text-xs px-2 py-1 rounded" style={{ background: "rgba(201,168,76,0.1)", color: "#c9a84c" }}>
-                      {config.numQuestions || 10} questions
+                      {config.numQuestions || 10} {t.dashboard.questions}
                     </span>
                     <span className="text-xs px-2 py-1 rounded" style={{ background: "rgba(201,168,76,0.1)", color: "#c9a84c" }}>
-                      Score min {config.passingScore || 70}%
+                      {t.dashboard.scoreMin} {config.passingScore || 70}%
                     </span>
                     <span className="text-xs px-2 py-1 rounded" style={{ background: "rgba(201,168,76,0.1)", color: "#c9a84c" }}>
                       {config.keyword || "/sphinx"}
                     </span>
                     <span className="text-xs" style={{ color: "#8b85a0" }}>
-                      — configuré par {team.user?.githubLogin || "un membre de l'équipe"}
+                      — {t.repos.configuredBy} {team.user?.githubLogin || t.repos.teamMember}
                     </span>
                   </div>
                 </div>
@@ -141,7 +145,7 @@ export default async function ReposPage() {
       {configuredByMe.length > 0 && available.length > 0 && (
         <div>
           <h2 className="text-lg font-semibold text-white mb-4 flex items-center gap-2" style={{ fontFamily: "Georgia, serif" }}>
-            Repos disponibles
+            {t.repos.available}
             <span className="text-xs font-normal px-2 py-0.5 rounded-full" style={{ background: "rgba(94,88,120,0.2)", color: "#8b85a0" }}>
               {available.length}
             </span>
@@ -157,6 +161,7 @@ export default async function ReposPage() {
                 language={repo.language}
                 description={repo.description}
                 configured={false}
+                locale={locale}
               />
             ))}
           </div>
@@ -167,7 +172,7 @@ export default async function ReposPage() {
       {configuredByMe.length === 0 && configuredByOthers.length === 0 && available.length > 0 && (
         <div>
           <h2 className="text-lg font-semibold text-white mb-4 flex items-center gap-2" style={{ fontFamily: "Georgia, serif" }}>
-            Configurer un repo
+            {t.repos.configureFirst}
           </h2>
           <div className="space-y-3">
             {available.map((repo) => (
@@ -179,6 +184,7 @@ export default async function ReposPage() {
                 language={repo.language}
                 description={repo.description}
                 configured={false}
+                locale={locale}
               />
             ))}
           </div>

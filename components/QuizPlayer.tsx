@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import QuizResult from "./QuizResult";
+import { dictionaries } from "@/lib/i18n";
 
 interface QuizQuestion {
   id: number;
@@ -31,6 +32,7 @@ interface QuizPlayerProps {
   repo: string;
   attempts: number;
   maxAttempts: number;
+  locale: "en" | "fr";
 }
 
 export default function QuizPlayer({
@@ -40,7 +42,9 @@ export default function QuizPlayer({
   repo,
   attempts,
   maxAttempts,
+  locale,
 }: QuizPlayerProps) {
+  const t = dictionaries[locale];
   const [currentIndex, setCurrentIndex] = useState(0);
   const [answers, setAnswers] = useState<(number | null)[]>(
     new Array(questions.length).fill(null)
@@ -118,6 +122,7 @@ export default function QuizPlayer({
         quizId={quizId}
         attempts={attempts + 1}
         maxAttempts={maxAttempts}
+        locale={locale}
       />
     );
   }
@@ -129,7 +134,7 @@ export default function QuizPlayer({
         <p className="text-sm text-gray-400 mb-1">{repo}</p>
         <h1 className="text-xl font-bold text-white mb-2">{prTitle}</h1>
         <p className="text-sm text-gray-400">
-          Tentative {attempts + 1}/{maxAttempts}
+          {t.player.attempt} {attempts + 1}/{maxAttempts}
         </p>
       </div>
 
@@ -157,7 +162,7 @@ export default function QuizPlayer({
       {/* Question */}
       <div className="bg-gray-800 border border-gray-700 rounded-lg p-6 mb-6">
         <p className="text-sm text-gray-400 mb-3">
-          Question {currentIndex + 1}/{questions.length}
+          {t.player.question} {currentIndex + 1}/{questions.length}
         </p>
         <p className="text-lg text-white mb-6">{currentQuestion.question}</p>
 
@@ -188,7 +193,7 @@ export default function QuizPlayer({
           disabled={currentIndex === 0}
           className="px-4 py-2 text-sm text-gray-400 hover:text-white disabled:opacity-30 disabled:cursor-not-allowed"
         >
-          ← Précédent
+          {t.player.prev}
         </button>
 
         <div className="flex gap-3">
@@ -197,7 +202,7 @@ export default function QuizPlayer({
               onClick={confirmAnswer}
               className="px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium transition-colors"
             >
-              Confirmer
+              {t.player.confirm}
             </button>
           )}
 
@@ -206,7 +211,7 @@ export default function QuizPlayer({
               onClick={goToNext}
               className="px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium transition-colors"
             >
-              Suivant →
+              {t.player.next}
             </button>
           )}
 
@@ -216,7 +221,7 @@ export default function QuizPlayer({
               disabled={submitting}
               className="px-5 py-2 bg-green-600 hover:bg-green-700 disabled:opacity-50 text-white rounded-lg text-sm font-medium transition-colors"
             >
-              {submitting ? "Envoi..." : "Soumettre le quiz"}
+              {submitting ? t.player.submitting : t.player.submit}
             </button>
           )}
         </div>
@@ -226,7 +231,7 @@ export default function QuizPlayer({
           disabled={currentIndex === questions.length - 1}
           className="px-4 py-2 text-sm text-gray-400 hover:text-white disabled:opacity-30 disabled:cursor-not-allowed"
         >
-          Suivant →
+          {t.player.next}
         </button>
       </div>
 
@@ -237,7 +242,7 @@ export default function QuizPlayer({
       )}
 
       <p className="text-center text-sm text-gray-400 mt-6">
-        {answeredCount}/{questions.length} réponses confirmées
+        {answeredCount}/{questions.length} {t.player.confirmed}
       </p>
     </div>
   );

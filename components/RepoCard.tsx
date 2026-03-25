@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { dictionaries } from "@/lib/i18n";
 
 interface RepoCardProps {
   repoFullName: string;
@@ -18,6 +19,7 @@ interface RepoCardProps {
     language?: "fr" | "en";
     keyword?: string;
   };
+  locale: "en" | "fr";
 }
 
 const selectClass =
@@ -35,7 +37,9 @@ export default function RepoCard({
   apiKey: initialApiKey,
   teamId: initialTeamId,
   initialConfig,
+  locale,
 }: RepoCardProps) {
+  const t = dictionaries[locale];
   const [configured, setConfigured] = useState(initialConfigured);
   const [apiKey, setApiKey] = useState(initialApiKey || "");
   const [teamId, setTeamId] = useState(initialTeamId || "");
@@ -76,7 +80,7 @@ export default function RepoCard({
           setEditing(false);
         } else {
           const data = await res.json();
-          setError(data.error || "Erreur lors de la mise à jour.");
+          setError(data.error || t.repoCard.errorUpdate);
         }
       } else {
         const res = await fetch("/api/keys", {
@@ -99,7 +103,7 @@ export default function RepoCard({
           setConfigured(true);
           setShowForm(false);
         } else {
-          setError(data.error || "Erreur lors de la configuration.");
+          setError(data.error || t.repoCard.errorConfig);
         }
       }
     } finally {
@@ -108,7 +112,7 @@ export default function RepoCard({
   }
 
   async function handleRevoke() {
-    if (!confirm(`Révoquer la clé API pour ${repoFullName} ? Les quiz existants seront supprimés.`)) return;
+    if (!confirm(t.repoCard.revokeConfirm.replace("{repo}", repoFullName))) return;
     setLoading(true);
     try {
       const res = await fetch(`/api/keys/${teamId}`, { method: "DELETE" });
@@ -124,7 +128,7 @@ export default function RepoCard({
   }
 
   async function handleResetKey() {
-    if (!confirm(`Générer une nouvelle clé API pour ${repoFullName} ? L'ancienne clé ne fonctionnera plus.`)) return;
+    if (!confirm(t.repoCard.resetConfirm.replace("{repo}", repoFullName))) return;
     setLoading(true);
     try {
       const res = await fetch(`/api/keys/${teamId}`, { method: "PATCH" });
@@ -150,7 +154,7 @@ export default function RepoCard({
         {/* Settings grid */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           <div>
-            <label className={labelClass}>Questions</label>
+            <label className={labelClass}>{t.repoCard.questions}</label>
             <select value={numQuestions} onChange={(e) => setNumQuestions(Number(e.target.value))} className={selectClass}>
               <option value={5}>5</option>
               <option value={10}>10</option>
@@ -159,7 +163,7 @@ export default function RepoCard({
             </select>
           </div>
           <div>
-            <label className={labelClass}>Score min</label>
+            <label className={labelClass}>{t.repoCard.scoreMin}</label>
             <select value={passingScore} onChange={(e) => setPassingScore(Number(e.target.value))} className={selectClass}>
               <option value={50}>50%</option>
               <option value={60}>60%</option>
@@ -169,7 +173,7 @@ export default function RepoCard({
             </select>
           </div>
           <div>
-            <label className={labelClass}>Tentatives</label>
+            <label className={labelClass}>{t.repoCard.attempts}</label>
             <select value={maxAttempts} onChange={(e) => setMaxAttempts(Number(e.target.value))} className={selectClass}>
               <option value={1}>1</option>
               <option value={2}>2</option>
@@ -179,17 +183,17 @@ export default function RepoCard({
             </select>
           </div>
           <div>
-            <label className={labelClass}>Langue</label>
+            <label className={labelClass}>{t.repoCard.language}</label>
             <select value={quizLanguage} onChange={(e) => setQuizLanguage(e.target.value as "fr" | "en")} className={selectClass}>
-              <option value="fr">Français</option>
-              <option value="en">English</option>
+              <option value="fr">{t.repoCard.french}</option>
+              <option value="en">{t.repoCard.english}</option>
             </select>
           </div>
         </div>
 
         {/* Keyword */}
         <div>
-          <label className={labelClass}>Keyword déclencheur (dans un commentaire PR)</label>
+          <label className={labelClass}>{t.repoCard.keyword}</label>
           <input type="text" value={keyword} onChange={(e) => setKeyword(e.target.value)} placeholder="/sphinx" className={inputClass} />
         </div>
 
@@ -202,13 +206,13 @@ export default function RepoCard({
             className="px-4 py-2 text-sm font-medium rounded-lg transition-all disabled:opacity-50"
             style={{ background: "#c9a84c", color: "#0f0c1a" }}
           >
-            {loading ? "..." : editing ? "Sauvegarder" : "Générer la clé API"}
+            {loading ? "..." : editing ? t.repoCard.save : t.repoCard.generate}
           </button>
           <button
             onClick={() => { setShowForm(false); setEditing(false); setError(""); }}
             className="px-4 py-2 text-sm text-gray-400 hover:text-white transition-colors"
           >
-            Annuler
+            {t.repoCard.cancel}
           </button>
         </div>
       </div>
@@ -226,7 +230,7 @@ export default function RepoCard({
                 isPrivate ? "text-yellow-400 bg-yellow-400/10" : "text-gray-400 bg-gray-400/10"
               }`}
             >
-              {isPrivate ? "privé" : "public"}
+              {isPrivate ? t.repos.private : t.repos.public}
             </span>
           </div>
           {description && <p className="text-sm text-gray-400 truncate">{description}</p>}
@@ -240,7 +244,7 @@ export default function RepoCard({
               className="px-4 py-2 text-sm font-medium rounded-lg transition-all"
               style={{ background: "#c9a84c", color: "#0f0c1a" }}
             >
-              Configurer
+              {t.repoCard.configure}
             </button>
           ) : configured && !showForm ? (
             <>
@@ -249,13 +253,13 @@ export default function RepoCard({
                 className="px-3 py-1 text-xs font-medium rounded border transition-colors"
                 style={{ borderColor: "#c9a84c", color: "#c9a84c" }}
               >
-                Modifier
+                {t.repoCard.edit}
               </button>
               <span
                 className="px-3 py-1 text-xs font-medium rounded"
                 style={{ color: "#c9a84c", background: "rgba(201,168,76,0.1)" }}
               >
-                Configuré
+                {t.repoCard.configured}
               </span>
             </>
           ) : null}
@@ -279,23 +283,22 @@ export default function RepoCard({
               </code>
               {!showKey && (
                 <span className="absolute inset-0 flex items-center justify-center text-xs" style={{ color: "#8b85a0" }}>
-                  Cliquer pour révéler
+                  {t.repoCard.reveal}
                 </span>
               )}
             </div>
             <button onClick={handleCopy} className="text-xs px-2 py-2" style={{ color: "#c9a84c" }}>
-              {copied ? "Copié !" : "Copier"}
+              {copied ? t.repoCard.copied : t.repoCard.copy}
             </button>
             <button onClick={handleResetKey} disabled={loading} className="text-xs text-orange-400 hover:text-orange-300 px-2 py-2">
-              Reset clé
+              {t.repoCard.resetKey}
             </button>
             <button onClick={handleRevoke} disabled={loading} className="text-xs text-red-400 hover:text-red-300 px-2 py-2">
-              Révoquer
+              {t.repoCard.revoke}
             </button>
           </div>
           <p className="text-xs mt-2" style={{ color: "#8b85a0" }}>
-            Ajoute ce secret dans ton repo : <code className="text-gray-400">PR_QUIZ_API_KEY</code>.
-            Ajoute aussi <code className="text-gray-400">ANTHROPIC_API_KEY</code> avec ta clé Anthropic.
+            {t.repoCard.secretHint}
           </p>
         </div>
       )}

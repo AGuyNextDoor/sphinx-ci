@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { dictionaries } from "@/lib/i18n";
 
 const demoQuestions = [
   {
@@ -38,7 +39,8 @@ const demoQuestions = [
   },
 ];
 
-export default function DemoQuiz() {
+export default function DemoQuiz({ locale }: { locale: "en" | "fr" }) {
+  const t = dictionaries[locale];
   const [answers, setAnswers] = useState<(number | null)[]>(
     new Array(demoQuestions.length).fill(null)
   );
@@ -144,19 +146,17 @@ export default function DemoQuiz() {
           style={{ background: "#0f0c1a", borderColor: "rgba(201,168,76,0.3)" }}
         >
           <p className="text-lg font-semibold text-white">
-            {correctCount}/{demoQuestions.length} bonnes réponses
+            {correctCount}/{demoQuestions.length} {t.landing.demoCorrect}
           </p>
           <p className="text-sm mt-1" style={{ color: "#b0a8c4" }}>
-            En vrai, les réponses ne sont révélées qu&apos;après la soumission
-            complète. Tout est personnalisable : nombre de questions, score
-            minimum, tentatives, langue.
+            {t.landing.demoNote}
           </p>
         </div>
       )}
 
       {answeredCount < demoQuestions.length && (
         <p className="text-center text-sm mt-6" style={{ color: "#8b85a0" }}>
-          Clique sur une réponse pour tester — {answeredCount}/{demoQuestions.length} répondues
+          {t.landing.demoClick} — {answeredCount}/{demoQuestions.length} {t.landing.demoAnswered}
         </p>
       )}
     </div>

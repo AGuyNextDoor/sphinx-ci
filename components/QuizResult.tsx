@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { dictionaries } from "@/lib/i18n";
 
 interface QuizQuestion {
   id: number;
@@ -31,6 +32,7 @@ interface QuizResultProps {
   quizId: string;
   attempts: number;
   maxAttempts: number;
+  locale: "en" | "fr";
 }
 
 export default function QuizResult({
@@ -39,7 +41,9 @@ export default function QuizResult({
   quizId,
   attempts,
   maxAttempts,
+  locale,
 }: QuizResultProps) {
+  const t = dictionaries[locale];
   const [regenerating, setRegenerating] = useState(false);
 
   const scoreColor = result.passed ? "text-green-400" : "text-red-400";
@@ -95,50 +99,47 @@ export default function QuizResult({
 
         <h2 className={`text-2xl font-bold mb-2 ${scoreColor}`}>
           {result.passed
-            ? "Quiz réussi !"
+            ? t.result.passed
             : result.attempts_remaining > 0
-            ? "Pas encore..."
-            : "Quiz échoué"}
+            ? t.result.notYet
+            : t.result.failed}
         </h2>
 
         <p className="text-gray-400">
-          {result.correct}/{result.total} bonnes réponses
+          {result.correct}/{result.total} {t.result.correct}
         </p>
 
         {result.passed && (
           <p className="text-green-300 text-sm mt-2">
-            Le merge est maintenant débloqué.
+            {t.result.mergeUnlocked}
           </p>
         )}
 
         {!result.passed && result.attempts_remaining > 0 && (
           <div className="text-center mt-4">
             <p className="text-yellow-300 text-sm mb-3">
-              {result.attempts_remaining} tentative
-              {result.attempts_remaining > 1 ? "s" : ""} restante
-              {result.attempts_remaining > 1 ? "s" : ""} — de nouvelles
-              questions seront générées.
+              {result.attempts_remaining} {t.result.retryLeft}
             </p>
             <button
               onClick={handleRetry}
               disabled={regenerating}
               className="px-5 py-2 bg-yellow-600 hover:bg-yellow-700 disabled:opacity-50 text-white rounded-lg text-sm font-medium transition-colors"
             >
-              {regenerating ? "Génération..." : "Réessayer avec de nouvelles questions"}
+              {regenerating ? t.result.generating : t.result.retry}
             </button>
           </div>
         )}
 
         {!result.passed && result.attempts_remaining === 0 && (
           <p className="text-red-300 text-sm mt-2">
-            Toutes les tentatives épuisées. Le merge reste bloqué.
+            {t.result.allUsed}
           </p>
         )}
       </div>
 
       {/* Detailed results */}
       <h3 className="text-lg font-semibold text-white mb-4">
-        Détail des réponses
+        {t.result.details}
       </h3>
       <div className="space-y-4">
         {result.results.map((r, i) => {
@@ -164,14 +165,14 @@ export default function QuizResult({
                   <p className="text-white text-sm mb-2">{q.question}</p>
                   {!r.correct && (
                     <p className="text-sm text-gray-400 mb-1">
-                      Ta réponse :{" "}
+                      {t.result.yourAnswer}{" "}
                       <span className="text-red-300">
                         {q.options[r.your_answer]}
                       </span>
                     </p>
                   )}
                   <p className="text-sm text-gray-400 mb-2">
-                    Bonne réponse :{" "}
+                    {t.result.correctAnswer}{" "}
                     <span className="text-green-300">
                       {q.options[r.right_answer]}
                     </span>
