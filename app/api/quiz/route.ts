@@ -69,8 +69,20 @@ export async function POST(request: NextRequest) {
     }).catch(() => {});
   }
 
-  // Skip if no meaningful diff
+  // Skip if no meaningful diff — post comment from admin account
   if (!diff || diff.length < 50) {
+    const ghToken = await getGitHubToken(team.id, callback_token);
+    try {
+      await postPRComment(
+        repo,
+        pr_number,
+        ghToken,
+        "## sphinx-ci — No quiz needed\n\nThis PR doesn't contain enough code changes to generate a quiz.\n\n✅ No quiz required — merge is not blocked."
+      );
+      await updateCommitStatus(repo, head_sha, ghToken, "success", "No code changes — quiz skipped");
+    } catch (e) {
+      console.error("Failed to post skip comment:", e);
+    }
     return NextResponse.json({ quiz_url: null, skipped: true });
   }
 
@@ -92,6 +104,18 @@ export async function POST(request: NextRequest) {
     );
   } catch (error) {
     console.error("Claude generation failed:", error);
+    const ghToken = await getGitHubToken(team.id, callback_token);
+    try {
+      await postPRComment(
+        repo,
+        pr_number,
+        ghToken,
+        "## ⚠️ sphinx-ci — Quiz generation failed\n\nClaude could not generate the quiz. This is temporary — try again by commenting `@sphinx-ci`.\n\nYour PR is **not blocked**."
+      );
+      await updateCommitStatus(repo, head_sha, ghToken, "success", "Quiz generation failed — not blocking");
+    } catch (e) {
+      console.error("Failed to post error comment:", e);
+    }
     return NextResponse.json(
       { error: "Quiz generation failed. PR is not blocked." },
       { status: 503 }
