@@ -44,7 +44,7 @@ model Team {
   userId          String?
   user            User?    @relation(fields: [userId], references: [id])
   anthropicApiKey String?
-  quizConfig      Json     @default("{\"numQuestions\":10,\"passingScore\":70,\"maxAttempts\":3,\"language\":\"fr\",\"keyword\":\"@sphinx-ci\"}")
+  quizConfig      Json     @default("{\"numQuestions\":10,\"passingScore\":70,\"maxAttempts\":3,\"language\":\"fr\",\"keyword\":\"@sphinx-ci\",\"dynamicQuestions\":false}")
   createdAt       DateTime @default(now())
   quizzes         Quiz[]
 }

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { validateApiKey } from "@/lib/auth";
-import { generateQuizQuestions, DEFAULT_QUIZ_CONFIG } from "@/lib/claude";
+import { generateQuizQuestions, DEFAULT_QUIZ_CONFIG, scaleQuestionCount } from "@/lib/claude";
 import type { QuizConfig } from "@/lib/claude";
 import { updateCommitStatus, postPRComment, getGitHubToken } from "@/lib/github";
 import { prisma } from "@/lib/db";
@@ -91,6 +91,14 @@ export async function POST(request: NextRequest) {
     ...DEFAULT_QUIZ_CONFIG,
     ...(team.quizConfig as Partial<QuizConfig> || {}),
   };
+
+  if (config.dynamicQuestions) {
+    config.numQuestions = scaleQuestionCount(
+      config.numQuestions,
+      diff,
+      files_changed || []
+    );
+  }
 
   // Generate questions via Claude
   let questions;

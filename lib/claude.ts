@@ -14,6 +14,7 @@ export interface QuizConfig {
   maxAttempts: number;
   language: "fr" | "en";
   keyword: string;
+  dynamicQuestions: boolean;
 }
 
 export const DEFAULT_QUIZ_CONFIG: QuizConfig = {
@@ -22,7 +23,31 @@ export const DEFAULT_QUIZ_CONFIG: QuizConfig = {
   maxAttempts: 3,
   language: "fr",
   keyword: "@sphinx-ci",
+  dynamicQuestions: false,
 };
+
+const MIN_QUESTIONS = 3;
+const MAX_QUESTIONS = 20;
+
+export function scaleQuestionCount(
+  baseline: number,
+  diff: string,
+  filesChanged: string[]
+): number {
+  const lines = diff ? diff.split("\n").length : 0;
+  const files = filesChanged?.length ?? 0;
+  const weight = lines + files * 20;
+
+  let factor: number;
+  if (weight < 30) factor = 0.5;
+  else if (weight < 100) factor = 0.75;
+  else if (weight < 300) factor = 1;
+  else if (weight < 800) factor = 1.5;
+  else factor = 2;
+
+  const scaled = Math.round(baseline * factor);
+  return Math.max(MIN_QUESTIONS, Math.min(MAX_QUESTIONS, scaled));
+}
 
 const PROMPTS = {
   fr: (numQuestions: number) => ({

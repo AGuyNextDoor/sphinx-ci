@@ -26,6 +26,7 @@ export async function PUT(
       maxAttempts?: number;
       language?: "fr" | "en";
       keyword?: string;
+      dynamicQuestions?: boolean;
     };
   };
   try {

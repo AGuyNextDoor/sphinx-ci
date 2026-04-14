@@ -18,6 +18,7 @@ interface RepoCardProps {
     maxAttempts?: number;
     language?: "fr" | "en";
     keyword?: string;
+    dynamicQuestions?: boolean;
   };
   locale: "en" | "fr";
 }
@@ -57,6 +58,7 @@ export default function RepoCard({
   const [maxAttempts, setMaxAttempts] = useState(initialConfig?.maxAttempts ?? 3);
   const [quizLanguage, setQuizLanguage] = useState<"fr" | "en">(initialConfig?.language ?? "fr");
   const [keyword, setKeyword] = useState(initialConfig?.keyword ?? "@sphinx-ci");
+  const [dynamicQuestions, setDynamicQuestions] = useState(initialConfig?.dynamicQuestions ?? false);
 
   function showToast(msg: string) {
     setToast(msg);
@@ -78,7 +80,7 @@ export default function RepoCard({
           method: "PUT",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            config: { numQuestions, passingScore, maxAttempts, language: quizLanguage, keyword },
+            config: { numQuestions, passingScore, maxAttempts, language: quizLanguage, keyword, dynamicQuestions },
           }),
         });
         if (res.ok) {
@@ -95,7 +97,7 @@ export default function RepoCard({
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             repo: repoFullName,
-            config: { numQuestions, passingScore, maxAttempts, language: quizLanguage, keyword },
+            config: { numQuestions, passingScore, maxAttempts, language: quizLanguage, keyword, dynamicQuestions },
           }),
         });
         const data = await res.json();
@@ -203,6 +205,22 @@ export default function RepoCard({
         <div>
           <label className={labelClass}>{t.repoCard.keyword}</label>
           <input type="text" value={keyword} onChange={(e) => setKeyword(e.target.value)} placeholder="@sphinx-ci" className={inputClass} />
+        </div>
+
+        {/* Dynamic questions toggle */}
+        <div>
+          <label className="flex items-start gap-2 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={dynamicQuestions}
+              onChange={(e) => setDynamicQuestions(e.target.checked)}
+              className="mt-0.5 accent-[#c9a84c]"
+            />
+            <span className="text-xs text-gray-300">
+              {t.repoCard.dynamicQuestions}
+              <span className="block text-gray-500 mt-0.5">{t.repoCard.dynamicQuestionsHint}</span>
+            </span>
+          </label>
         </div>
 
         {error && <p className="text-xs text-red-400">{error}</p>}
