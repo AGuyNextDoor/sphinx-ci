@@ -181,6 +181,8 @@ export const dictionaries = {
       english: "English",
       errorUpdate: "Error updating.",
       errorConfig: "Error configuring.",
+      dynamicQuestions: "Scale questions with diff size",
+      dynamicQuestionsHint: "Uses the value above as the baseline, then adjusts up or down based on lines and files changed.",
     },
     // QuizPlayer
     player: {
@@ -378,6 +380,8 @@ export const dictionaries = {
       english: "English",
       errorUpdate: "Erreur lors de la mise à jour.",
       errorConfig: "Erreur lors de la configuration.",
+      dynamicQuestions: "Adapter le nombre de questions à la taille du diff",
+      dynamicQuestionsHint: "Utilise la valeur ci-dessus comme référence, puis ajuste selon le nombre de lignes et de fichiers modifiés.",
     },
     player: {
       attempt: "Tentative",

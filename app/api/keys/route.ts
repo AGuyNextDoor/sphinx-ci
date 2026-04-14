@@ -17,6 +17,7 @@ export async function POST(request: NextRequest) {
       maxAttempts?: number;
       language?: "fr" | "en";
       keyword?: string;
+      dynamicQuestions?: boolean;
     };
   };
   try {
@@ -55,6 +56,7 @@ export async function POST(request: NextRequest) {
     maxAttempts: body.config?.maxAttempts ?? 3,
     language: body.config?.language ?? "fr",
     keyword: body.config?.keyword ?? "@sphinx-ci",
+    dynamicQuestions: body.config?.dynamicQuestions ?? false,
   };
 
   const team = await prisma.team.create({
