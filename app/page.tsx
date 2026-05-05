@@ -406,6 +406,14 @@ export default async function Home() {
               Pricing
             </Link>
             <span style={{ color: "#252036" }}>·</span>
+            <Link href="/docs" className="transition-colors" style={{ color: "#b0a8c4" }}>
+              Docs
+            </Link>
+            <span style={{ color: "#252036" }}>·</span>
+            <Link href="/status" className="transition-colors" style={{ color: "#b0a8c4" }}>
+              Status
+            </Link>
+            <span style={{ color: "#252036" }}>·</span>
             <Link href="/support" className="transition-colors" style={{ color: "#b0a8c4" }}>
               Support
             </Link>
